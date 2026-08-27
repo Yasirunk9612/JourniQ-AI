@@ -1,0 +1,100 @@
+import { Destination, Experience, Hotel, Recommendation } from "./public-types";
+
+export const destinations: Destination[] = [
+  {
+    name: "Mirissa Coast",
+    district: "Matara",
+    province: "Southern Province",
+    category: "Beaches",
+    description: "Whale watching, sunset bays, reef edges, and boutique coastal stays.",
+    rating: 4.8,
+    bestTime: "Nov-Apr",
+    tags: ["Whales", "Surf", "Sunsets"],
+    image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80",
+    accent: "coral",
+  },
+  {
+    name: "Sigiriya Rock Fortress",
+    district: "Matale",
+    province: "Central Province",
+    category: "Heritage",
+    description: "Ancient royal citadel, frescoes, gardens, and iconic lion rock views.",
+    rating: 4.9,
+    bestTime: "Jan-Sep",
+    tags: ["UNESCO", "History", "Views"],
+    image: "https://images.unsplash.com/photo-1588598198321-9735fd52455b?auto=format&fit=crop&w=1200&q=80",
+    accent: "gold",
+  },
+  {
+    name: "Yala Wild Reserve",
+    district: "Hambantota",
+    province: "Southern Province",
+    category: "Wildlife",
+    description: "Leopard trails, safari drives, dry-zone forest, and bird-rich lagoons.",
+    rating: 4.7,
+    bestTime: "Feb-Jul",
+    tags: ["Safari", "Wildlife", "Nature"],
+    image: "https://images.unsplash.com/photo-1549366021-9f761d450615?auto=format&fit=crop&w=1200&q=80",
+    accent: "teal",
+  },
+  {
+    name: "Ella Highlands",
+    district: "Badulla",
+    province: "Uva Province",
+    category: "Mountains",
+    description: "Tea country escapes, scenic rail routes, ridge hikes, and cool mornings.",
+    rating: 4.8,
+    bestTime: "Jan-Mar",
+    tags: ["Rail", "Tea", "Hiking"],
+    image: "https://images.unsplash.com/photo-1586896420943-d3a2bfdcc269?auto=format&fit=crop&w=1200&q=80",
+    accent: "teal",
+  },
+  {
+    name: "Meemure Village",
+    district: "Kandy",
+    province: "Central Province",
+    category: "Cultural villages",
+    description: "Immersive rural life, craft stories, home cooking, and mountain village paths.",
+    rating: 4.6,
+    bestTime: "Mar-Sep",
+    tags: ["Village life", "Food", "Craft"],
+    image: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80",
+    accent: "gold",
+  },
+  {
+    name: "Kitulgala Rapids",
+    district: "Kegalle",
+    province: "Sabaragamuwa Province",
+    category: "Adventure",
+    description: "Whitewater rafting, rainforest expedition routes, canyoning, and river stays.",
+    rating: 4.7,
+    bestTime: "Dec-Apr",
+    tags: ["Rafting", "Rainforest", "Adventure"],
+    image: "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1200&q=80",
+    accent: "coral",
+  },
+];
+
+export const experiences: Experience[] = [
+  { name: "Village Dawn Trail", category: "Village culture", district: "Anuradhapura", description: "Cycle through paddy fields and local temple lanes." },
+  { name: "Spice & Clay Kitchen", category: "Traditional food", district: "Galle", description: "Hands-on cooking with heritage recipes and clay stoves." },
+  { name: "South Coast Surf Session", category: "Surfing", district: "Matara", description: "Guided surf for beginners to advanced riders." },
+  { name: "Knuckles Ridge Trek", category: "Hiking", district: "Matale", description: "Cloud forest routes with panoramic mountain lookouts." },
+  { name: "Sunrise Jeep Safari", category: "Safari", district: "Monaragala", description: "Golden-hour wildlife drive with expert trackers." },
+  { name: "Ayurvedic Reset Retreat", category: "Wellness", district: "Kalutara", description: "Holistic wellness sessions with local practitioners." },
+  { name: "Tea Valley Cycling", category: "Cycling", district: "Nuwara Eliya", description: "Curated cycle routes through tea estates and waterfalls." },
+  { name: "Lakeside Forest Camp", category: "Camping", district: "Ratnapura", description: "Eco-camp nights with stargazing and guided nature walks." },
+];
+
+export const hotels: Hotel[] = [
+  { name: "Cinnamon Cove Villa", district: "Galle", type: "Boutique Villa", rooms: 12, rating: 4.8, price: "LKR 54,000 / night" },
+  { name: "Azure Reef Resort", district: "Trincomalee", type: "Resort", rooms: 64, rating: 4.7, price: "LKR 66,000 / night" },
+  { name: "Hillmist Guest House", district: "Ella", type: "Guest House", rooms: 18, rating: 4.6, price: "LKR 25,500 / night" },
+  { name: "Lotus Grand Hotel", district: "Colombo", type: "Hotel", rooms: 120, rating: 4.5, price: "LKR 42,000 / night" },
+];
+
+export const recommendations: Recommendation[] = [
+  { name: "Nine Arches Trail + Boutique Stay", district: "Badulla", category: "Place + Hotel", finalScore: 0.93, contentScore: 0.9, countryDemandScore: 0.88, explanation: "High match for scenic rail interests, moderate budget, and slow-travel preferences." },
+  { name: "South Coast Surf & Wellness Circuit", district: "Matara", category: "Experience", finalScore: 0.91, contentScore: 0.89, countryDemandScore: 0.86, explanation: "Strong alignment with active beach travel and short-duration itineraries." },
+  { name: "Sigiriya Heritage Escape", district: "Matale", category: "Place", finalScore: 0.89, contentScore: 0.86, countryDemandScore: 0.84, explanation: "Excellent fit for culture-focused travelers seeking iconic landmarks." },
+];

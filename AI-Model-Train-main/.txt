@@ -1,0 +1,20 @@
+ai-model/
+│
+├── data/
+│   └── tourism_ai_master_dataset_v2_full.csv
+│
+├── models/
+│
+├── results/
+│
+├── src/
+│   ├── prepare_data.py
+│   ├── train_knn.py
+│   ├── train_svm.py
+│   ├── train_random_forest.py
+│   ├── train_xgboost.py
+│   ├── train_adaboost.py
+│   ├── train_lstm.py
+│   ├── train_svm_lstm.py
+│   ├── train_knn_lstm.py
+│   └── compare_models.py
