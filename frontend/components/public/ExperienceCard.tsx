@@ -11,10 +11,12 @@ export default function ExperienceCard({
   item,
   onBook,
   bookingLoading,
+  requiresLogin = false,
 }: {
   item: Experience;
   onBook?: (payload: { experienceId: string; date: string; guests: number }) => void;
   bookingLoading?: boolean;
+  requiresLogin?: boolean;
 }) {
   const defaultDate = new Date().toISOString().slice(0, 10);
   return (
@@ -71,7 +73,7 @@ export default function ExperienceCard({
             <Field label="Date" name="date" type="date" defaultValue={defaultDate} required />
             <Field label="Guests" name="guests" type="number" min={1} max={item.maxGuests || 30} defaultValue={1} required />
             <Button type="submit" disabled={bookingLoading} variant="coral" className="w-full">
-              {bookingLoading ? <InlineLoading label="Booking..." /> : <><Calendar size={16} /> Book experience</>}
+              {bookingLoading ? <InlineLoading label="Booking..." /> : <><Calendar size={16} /> {requiresLogin ? "Login to book" : "Book experience"}</>}
             </Button>
             <Link href={`/experiences/${item.id}`} className="text-center text-sm font-extrabold text-[var(--color-teal)]">View full experience page</Link>
           </form>

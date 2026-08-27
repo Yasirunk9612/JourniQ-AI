@@ -61,23 +61,25 @@ export default function PublicNavbar() {
 
   return (
     <header className={`fixed inset-x-0 top-0 z-50 transition duration-300 ${solid ? "border-b border-white/60 bg-[rgba(252,250,246,0.9)] shadow-sm backdrop-blur-2xl" : "bg-transparent"}`}>
-      <div className={`tourist-container flex min-h-[88px] items-center justify-between gap-4 py-2.5 ${navTone}`}>
+      <div className={`tourist-container flex min-h-[74px] items-center justify-between gap-4 py-2 ${navTone}`}>
         <Link
           href="/"
-          className={`group relative flex shrink-0 items-center gap-3 rounded-[2rem] border py-2 pl-2 pr-4 transition duration-300 ${
+          className={`group relative flex shrink-0 items-center gap-2.5 rounded-[1.55rem] border py-1.5 pl-1.5 pr-3 transition duration-300 ${
             solid
-              ? "border-[rgba(12,59,53,0.12)] bg-white/90 shadow-[0_18px_44px_rgba(7,26,34,0.1)]"
-              : "border-white/20 bg-[rgba(7,26,34,0.28)] shadow-[0_18px_46px_rgba(0,0,0,0.18)] backdrop-blur-md"
+              ? "border-[rgba(12,59,53,0.12)] bg-white/88 shadow-[0_12px_30px_rgba(7,26,34,0.09)]"
+              : "border-white/18 bg-[rgba(7,26,34,0.22)] shadow-[0_14px_34px_rgba(0,0,0,0.15)] backdrop-blur-md"
           }`}
           onClick={() => setOpen(false)}
         >
-          <span className="absolute -right-1 -top-1 size-4 rounded-full border-2 border-white bg-[var(--color-gold)] shadow-sm" aria-hidden="true" />
-          <span className="relative size-[64px] shrink-0 overflow-hidden rounded-[1.45rem] bg-[var(--color-midnight)] shadow-[0_18px_38px_rgba(7,26,34,0.28)] ring-2 ring-white/85 transition duration-300 group-hover:scale-[1.03] max-sm:size-[58px]">
-            <Image src="/LOGO2.png" alt="JourniQ AI logo" fill sizes="(max-width: 640px) 58px, 64px" className="object-cover scale-[1.14]" priority />
+          <span className="absolute -right-0.5 -top-0.5 size-3 rounded-full border border-white bg-[var(--color-gold)] shadow-sm" aria-hidden="true" />
+          <span className={`relative h-11 w-12 shrink-0 overflow-hidden rounded-[1.15rem] shadow-[0_12px_28px_rgba(7,26,34,0.2)] ring-1 transition duration-300 group-hover:scale-[1.03] max-sm:h-10 max-sm:w-11 ${
+            solid ? "bg-[var(--color-midnight)] ring-[rgba(12,59,53,0.12)]" : "bg-white/92 ring-white/60"
+          }`}>
+            <Image src="/LOGO2.png" alt="JourniQ AI logo" fill sizes="(max-width: 640px) 44px, 48px" className="object-contain p-1.5" priority />
           </span>
           <span className="hidden leading-none sm:block">
-            <span className={`block whitespace-nowrap font-serif text-[1.65rem] font-black leading-[0.86] ${solid ? "text-[var(--color-midnight)]" : "text-white"}`}>JourniQ AI</span>
-            <span className={`mt-1.5 block whitespace-nowrap text-[10px] font-black uppercase tracking-[0.2em] ${solid ? "text-[var(--color-teal)]" : "text-[var(--color-gold)]"}`}>Sri Lanka travel</span>
+            <span className={`block whitespace-nowrap font-serif text-[1.26rem] font-black leading-[0.9] ${solid ? "text-[var(--color-midnight)]" : "text-white"}`}>JourniQ AI</span>
+            <span className={`mt-1 block whitespace-nowrap text-[8px] font-black uppercase tracking-[0.18em] ${solid ? "text-[var(--color-teal)]" : "text-[var(--color-gold)]"}`}>Sri Lanka travel</span>
           </span>
         </Link>
 
@@ -130,7 +132,7 @@ export default function PublicNavbar() {
       </div>
 
       {open ? (
-        <div className="fixed inset-x-0 top-[96px] z-50 mx-3 rounded-[1.5rem] border border-white/70 bg-[var(--color-ivory)] p-4 text-[var(--color-midnight)] shadow-[var(--shadow-lift)] xl:hidden">
+        <div className="fixed inset-x-0 top-[82px] z-50 mx-3 rounded-[1.5rem] border border-white/70 bg-[var(--color-ivory)] p-4 text-[var(--color-midnight)] shadow-[var(--shadow-lift)] xl:hidden">
           <nav className="grid gap-1" aria-label="Mobile navigation">
             {links.map(([label, href]) => (
               <Link key={href} href={href} onClick={() => setOpen(false)} className="rounded-2xl px-4 py-3 text-base font-extrabold hover:bg-[var(--color-muted)]">

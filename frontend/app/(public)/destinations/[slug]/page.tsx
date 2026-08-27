@@ -9,8 +9,6 @@ import { Badge, ButtonLink, EmptyState, ErrorState, LoadingSkeleton, Rating } fr
 import { Destination } from "@/lib/public-types";
 import { publicApi } from "@/lib/publicApi";
 
-const fallbackImage = "https://images.unsplash.com/photo-1586896420943-d3a2bfdcc269?auto=format&fit=crop&w=1800&q=85";
-
 export default function DestinationStoryPage() {
   const params = useParams<{ slug: string }>();
   const [destination, setDestination] = useState<Destination | null>(null);
@@ -71,7 +69,11 @@ export default function DestinationStoryPage() {
   return (
     <main className="bg-[var(--color-ivory)]">
       <section className="relative min-h-[76vh] overflow-hidden bg-[var(--color-midnight)] text-white">
-        <Image src={destination.image || fallbackImage} alt={`${destination.name} in ${destination.district}`} fill priority sizes="100vw" className="object-cover" />
+        {destination.image ? (
+          <Image src={destination.image} alt={`${destination.name} in ${destination.district}`} fill priority sizes="100vw" className="object-cover" />
+        ) : (
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(217,164,65,0.28),transparent_28%),radial-gradient(circle_at_82%_18%,rgba(15,118,110,0.34),transparent_30%),linear-gradient(135deg,#071A22,#0C3B35_56%,#071A22)]" />
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-midnight)] via-[rgba(7,26,34,0.52)] to-[rgba(7,26,34,0.2)]" />
         <div className="tourist-container relative flex min-h-[76vh] flex-col justify-end pb-14 pt-32">
           <Link href="/destinations" className="mb-6 inline-flex w-fit items-center gap-2 rounded-full border border-white/18 bg-white/12 px-4 py-2 text-sm font-bold text-white backdrop-blur transition hover:bg-white/18">

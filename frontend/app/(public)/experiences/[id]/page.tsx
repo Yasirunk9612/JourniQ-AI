@@ -3,7 +3,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import { ArrowLeft, Calendar, CheckCircle2, Clock, Compass, MapPin, ShieldCheck, Sparkles, Users } from "lucide-react";
@@ -12,9 +12,12 @@ import { Experience } from "@/lib/public-types";
 import { Badge, Button, EmptyState, ErrorState, Field, InlineLoading, LoadingSkeleton } from "@/components/public/TouristUI";
 import ListingInquiryButton from "@/components/chat/ListingInquiryButton";
 import { formatLkrPrice } from "@/lib/currency";
+import { useAuth } from "@/context/AuthContext";
 
 export default function PublicExperienceDetailPage() {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
+  const { user } = useAuth();
   const [experience, setExperience] = useState<Experience | null>(null);
   const [loading, setLoading] = useState(true);
   const [bookingLoading, setBookingLoading] = useState(false);
@@ -43,6 +46,11 @@ export default function PublicExperienceDetailPage() {
   const book = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!experience?.id) return;
+    if (user?.role !== "tourist") {
+      toast.error("Please login as a tourist to book.");
+      router.push("/login");
+      return;
+    }
     const fd = new FormData(event.currentTarget);
     try {
       setBookingLoading(true);
@@ -136,7 +144,9 @@ export default function PublicExperienceDetailPage() {
           <form onSubmit={book} className="mt-5 grid gap-4">
             <Field inverted label="Date" name="date" type="date" required />
             <Field inverted label="Guests" name="guests" type="number" min={1} max={experience.maxGuests || 30} defaultValue={1} required />
-            <Button type="submit" disabled={bookingLoading} variant="coral" className="w-full">{bookingLoading ? <InlineLoading label="Booking..." /> : <><Calendar size={16} /> Send booking request</>}</Button>
+            <Button type="submit" disabled={bookingLoading} variant="coral" className="w-full">
+              {bookingLoading ? <InlineLoading label="Booking..." /> : <><Calendar size={16} /> {user?.role !== "tourist" ? "Login to request experience" : "Send booking request"}</>}
+            </Button>
           </form>
           {experience.id ? <div className="mt-3">
             <ListingInquiryButton contextType="experience" contextId={experience.id} listingName={experience.name} />

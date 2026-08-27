@@ -3,7 +3,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import { ArrowLeft, BedDouble, Check, MapPin, ShieldCheck, Sparkles, Star, Users } from "lucide-react";
@@ -12,9 +12,12 @@ import { Hotel, PublicHotelRoom } from "@/lib/public-types";
 import { Badge, Button, EmptyState, ErrorState, Field, InlineLoading, LoadingSkeleton } from "@/components/public/TouristUI";
 import ListingInquiryButton from "@/components/chat/ListingInquiryButton";
 import { formatLkr, formatLkrPrice } from "@/lib/currency";
+import { useAuth } from "@/context/AuthContext";
 
 export default function PublicHotelDetailPage() {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
+  const { user } = useAuth();
   const [hotel, setHotel] = useState<Hotel | null>(null);
   const [rooms, setRooms] = useState<PublicHotelRoom[]>([]);
   const [selectedRoomId, setSelectedRoomId] = useState("");
@@ -54,6 +57,11 @@ export default function PublicHotelDetailPage() {
   const book = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!hotel?.id) return;
+    if (user?.role !== "tourist") {
+      toast.error("Please login as a tourist to book.");
+      router.push("/login");
+      return;
+    }
     const fd = new FormData(event.currentTarget);
     try {
       setBookingLoading(true);
@@ -179,7 +187,7 @@ export default function PublicHotelDetailPage() {
             <Field inverted label="Check in" name="checkIn" type="date" required />
             <Field inverted label="Check out" name="checkOut" type="date" required />
             <Field inverted label="Guests" name="guests" type="number" min={1} max={selectedRoom?.capacity || 20} defaultValue={1} required />
-            <Button type="submit" disabled={bookingLoading} variant="coral" className="w-full">{bookingLoading ? <InlineLoading label="Booking..." /> : "Send booking request"}</Button>
+            <Button type="submit" disabled={bookingLoading} variant="coral" className="w-full">{bookingLoading ? <InlineLoading label="Booking..." /> : user?.role !== "tourist" ? "Login to request booking" : "Send booking request"}</Button>
           </form>
           {hotel.id ? <div className="mt-3">
             <ListingInquiryButton contextType="hotel" contextId={hotel.id} listingName={hotel.name} />

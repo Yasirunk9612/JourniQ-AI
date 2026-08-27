@@ -2,6 +2,7 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { BedDouble, Building2, Grid2X2, List, ShieldCheck, SlidersHorizontal, Sparkles } from "lucide-react";
 import HeroSection from "@/components/public/HeroSection";
@@ -10,12 +11,15 @@ import SectionHeader from "@/components/public/SectionHeader";
 import { Button, EmptyState, ErrorState, Field, LoadingSkeleton, SelectField } from "@/components/public/TouristUI";
 import { publicApi } from "@/lib/publicApi";
 import { Hotel } from "@/lib/public-types";
+import { useAuth } from "@/context/AuthContext";
 
 type SortMode = "recommended" | "rating" | "price-asc" | "price-desc";
 
 const parsePrice = (price: string) => Number(price.match(/\d+/)?.[0] || 0);
 
 export default function HotelsPage() {
+  const { user } = useAuth();
+  const router = useRouter();
   const [hotels, setHotels] = useState<Hotel[]>([]);
   const [district, setDistrict] = useState("");
   const [type, setType] = useState("");
@@ -65,6 +69,11 @@ export default function HotelsPage() {
   };
 
   const onBook = async (payload: { hotelId: string; checkIn: string; checkOut: string; guests: number }) => {
+    if (user?.role !== "tourist") {
+      toast.error("Please login as a tourist to book.");
+      router.push("/login");
+      return;
+    }
     try {
       setBookingLoading(true);
       await publicApi.bookHotel(payload);
@@ -150,21 +159,23 @@ export default function HotelsPage() {
         </div>
       </section>
 
-      <section className="tourist-container mt-10">
-        <div className="journiq-marquee overflow-hidden rounded-[1.5rem] border border-[rgba(12,59,53,0.1)] bg-white/78 py-3 shadow-sm">
-          <div className="journiq-marquee-track flex gap-3 px-3">
-            {[...filteredHotels.slice(0, 8), ...filteredHotels.slice(0, 8)].map((hotel, index) => (
-              <div key={`${hotel.id || hotel.name}-${index}`} className="flex min-w-64 items-center justify-between rounded-full bg-[var(--color-muted)] px-4 py-3">
-                <span>
-                  <span className="block max-w-40 truncate text-sm font-extrabold text-[var(--color-midnight)]">{hotel.name}</span>
-                  <span className="block text-xs font-bold text-[var(--color-teal)]">{hotel.district} · {hotel.type}</span>
-                </span>
-                <span className="journiq-live-dot text-xs font-extrabold text-emerald-700">Live</span>
-              </div>
-            ))}
+      {filteredHotels.length ? (
+        <section className="tourist-container mt-10">
+          <div className="journiq-marquee overflow-hidden rounded-[1.5rem] border border-[rgba(12,59,53,0.1)] bg-white/78 py-3 shadow-sm">
+            <div className="journiq-marquee-track flex gap-3 px-3">
+              {[...filteredHotels.slice(0, 8), ...filteredHotels.slice(0, 8)].map((hotel, index) => (
+                <div key={`${hotel.id || hotel.name}-${index}`} className="flex min-w-64 items-center justify-between rounded-full bg-[var(--color-muted)] px-4 py-3">
+                  <span>
+                    <span className="block max-w-40 truncate text-sm font-extrabold text-[var(--color-midnight)]">{hotel.name}</span>
+                    <span className="block text-xs font-bold text-[var(--color-teal)]">{hotel.district} · {hotel.type}</span>
+                  </span>
+                  <span className="journiq-live-dot text-xs font-extrabold text-emerald-700">Live</span>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      ) : null}
 
       <section className="tourist-container mt-14">
         <SectionHeader eyebrow="Available stays" title="Places to land after the day opens up." description={`${filteredHotels.length} hotel listing${filteredHotels.length === 1 ? "" : "s"} matching your current filters.`} />
@@ -174,7 +185,7 @@ export default function HotelsPage() {
           {!loading && !error && filteredHotels.length === 0 ? <EmptyState title="No approved hotels found" description="Try another district or clear the rating filter. Hotel listings are loaded from the backend, so this state reflects current approved inventory." actionLabel="Reload hotels" onAction={() => load()} /> : null}
           {!loading && !error && filteredHotels.length > 0 ? (
             <div className={`grid gap-6 ${view === "grid" ? "md:grid-cols-2 xl:grid-cols-3" : "grid-cols-1"}`}>
-              {filteredHotels.map((hotel) => <HotelCard key={hotel.id || hotel.name} item={hotel} variant={view} onBook={onBook} bookingLoading={bookingLoading} />)}
+              {filteredHotels.map((hotel) => <HotelCard key={hotel.id || hotel.name} item={hotel} variant={view} onBook={onBook} bookingLoading={bookingLoading} requiresLogin={user?.role !== "tourist"} />)}
             </div>
           ) : null}
         </div>

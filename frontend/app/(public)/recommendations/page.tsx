@@ -7,7 +7,6 @@ import HeroSection from "@/components/public/HeroSection";
 import RecommendationCard from "@/components/public/RecommendationCard";
 import SectionHeader from "@/components/public/SectionHeader";
 import { Badge, Button, EmptyState, ErrorState, Field, LoadingSkeleton, SelectField, TextArea } from "@/components/public/TouristUI";
-import { recommendations } from "@/lib/public-data";
 import { publicApi } from "@/lib/publicApi";
 import { PersonalizedRecommendationResponse, Recommendation } from "@/lib/public-types";
 import { BrainCircuit, Gauge, SlidersHorizontal, Sparkles } from "lucide-react";
@@ -40,9 +39,8 @@ export default function RecommendationsPage() {
 
   const visible = useMemo(() => {
     if (aiResult) return aiResult.recommendations;
-    if (type === "all") return recommendations;
-    return recommendations.filter((item) => item.category.toLowerCase().includes(type));
-  }, [aiResult, type]);
+    return [];
+  }, [aiResult]);
 
   const loadRecommendations = async () => {
     setSubmitted(true);
@@ -107,7 +105,7 @@ export default function RecommendationsPage() {
           </div>
           <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm leading-6 text-slate-600">
-              {aiResult ? aiResult.model.note : "Before you submit, sample cards are shown. After submit, results come from the trained tourism dataset API."}
+              {aiResult ? aiResult.model.note : "Submit your preferences to fetch live model recommendations from the backend."}
             </p>
             <Button type="submit" disabled={loading}>{loading ? "Personalizing..." : "Personalize my results"}</Button>
           </div>
@@ -136,25 +134,27 @@ export default function RecommendationsPage() {
         </div>
       </section>
 
-      <section className="tourist-container mt-10">
-        <div className="journiq-marquee overflow-hidden rounded-[1.5rem] border border-[rgba(12,59,53,0.1)] bg-white/78 py-3 shadow-sm">
-          <div className="journiq-marquee-track flex gap-3 px-3">
-            {[...visible.slice(0, 8), ...visible.slice(0, 8)].map((item, index) => (
-              <div key={`${item.id || item.name}-${index}`} className="flex min-w-72 items-center justify-between rounded-full bg-[var(--color-muted)] px-4 py-3">
-                <span>
-                  <span className="block max-w-48 truncate text-sm font-extrabold text-[var(--color-midnight)]">{item.name}</span>
-                  <span className="block text-xs font-bold text-[var(--color-teal)]">{item.district} · {Math.round(item.finalScore * 100)}% match</span>
-                </span>
-                <span className="journiq-live-dot text-xs font-extrabold text-emerald-700">{aiResult ? "Model" : "Preview"}</span>
-              </div>
-            ))}
+      {visible.length ? (
+        <section className="tourist-container mt-10">
+          <div className="journiq-marquee overflow-hidden rounded-[1.5rem] border border-[rgba(12,59,53,0.1)] bg-white/78 py-3 shadow-sm">
+            <div className="journiq-marquee-track flex gap-3 px-3">
+              {[...visible.slice(0, 8), ...visible.slice(0, 8)].map((item, index) => (
+                <div key={`${item.id || item.name}-${index}`} className="flex min-w-72 items-center justify-between rounded-full bg-[var(--color-muted)] px-4 py-3">
+                  <span>
+                    <span className="block max-w-48 truncate text-sm font-extrabold text-[var(--color-midnight)]">{item.name}</span>
+                    <span className="block text-xs font-bold text-[var(--color-teal)]">{item.district} · {Math.round(item.finalScore * 100)}% match</span>
+                  </span>
+                  <span className="journiq-live-dot text-xs font-extrabold text-emerald-700">Model</span>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      ) : null}
 
       <section className="tourist-container mt-14">
         <SectionHeader
-          eyebrow={aiResult ? `${aiResult.model.selectedModel} model selected` : "Personalized preview"}
+          eyebrow={aiResult ? `${aiResult.model.selectedModel} model selected` : "Live personalization"}
           title="Matches that explain the travel logic."
           description={
             submitted

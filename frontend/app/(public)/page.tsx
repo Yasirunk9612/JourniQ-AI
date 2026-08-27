@@ -2,6 +2,7 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import {
   ArrowRight,
@@ -28,7 +29,6 @@ import SearchBar from "@/components/public/SearchBar";
 import SectionHeader from "@/components/public/SectionHeader";
 import { Badge, Button, ButtonLink, EmptyState, LoadingSkeleton } from "@/components/public/TouristUI";
 import { useAuth } from "@/context/AuthContext";
-import { destinations as curatedDestinations, experiences as curatedExperiences, hotels as curatedHotels, recommendations as curatedRecommendations } from "@/lib/public-data";
 import { publicApi } from "@/lib/publicApi";
 import { Destination, Experience, Hotel, Recommendation } from "@/lib/public-types";
 
@@ -49,6 +49,7 @@ const formatCount = (count: number) => (count > 99 ? "99+" : String(count).padSt
 
 export default function HomePage() {
   const { user } = useAuth();
+  const router = useRouter();
   const [liveDestinations, setLiveDestinations] = useState<Destination[]>([]);
   const [liveHotels, setLiveHotels] = useState<Hotel[]>([]);
   const [liveExperiences, setLiveExperiences] = useState<Experience[]>([]);
@@ -114,7 +115,7 @@ export default function HomePage() {
     }
 
     if (issues.length) {
-      setDataNotice(`Live ${issues.join(", ")} data could not be loaded, so this page is using refined fallback content for those sections.`);
+      setDataNotice(`Live ${issues.join(", ")} data could not be loaded. The page is showing only the data that came from the backend.`);
     }
     setLoading(false);
   }, [preferenceText, primaryBudget, user?.country]);
@@ -123,10 +124,10 @@ export default function HomePage() {
     loadHomeData();
   }, [loadHomeData]);
 
-  const destinations = liveDestinations.length ? liveDestinations : curatedDestinations;
-  const hotels = liveHotels.length ? liveHotels : curatedHotels;
-  const experiences = liveExperiences.length ? liveExperiences : curatedExperiences;
-  const recommendations = aiRecommendations.length ? aiRecommendations : curatedRecommendations;
+  const destinations = liveDestinations;
+  const hotels = liveHotels;
+  const experiences = liveExperiences;
+  const recommendations = aiRecommendations;
   const featuredDestination = destinations[0];
   const supportingDestinations = destinations.filter((item) => item.name !== featuredDestination?.name).slice(0, 3);
   const featuredHotels = hotels.slice(0, 3);
@@ -135,13 +136,18 @@ export default function HomePage() {
   const categories = Array.from(new Set(experiences.map((item) => String(item.category).replace("_", " ")))).slice(0, 8);
 
   const stats = [
-    { label: "Destinations", value: liveDestinations.length || curatedDestinations.length, live: liveDestinations.length > 0 },
-    { label: "Approved hotels", value: liveHotels.length || curatedHotels.length, live: liveHotels.length > 0 },
-    { label: "Experiences", value: liveExperiences.length || curatedExperiences.length, live: liveExperiences.length > 0 },
-    { label: "AI matches", value: aiRecommendations.length || curatedRecommendations.length, live: aiRecommendations.length > 0 },
+    { label: "Destinations", value: liveDestinations.length },
+    { label: "Approved hotels", value: liveHotels.length },
+    { label: "Experiences", value: liveExperiences.length },
+    { label: "AI matches", value: aiRecommendations.length },
   ];
 
   const onBookHotel = async (payload: { hotelId: string; checkIn: string; checkOut: string; guests: number }) => {
+    if (user?.role !== "tourist") {
+      toast.error("Please login as a tourist to book.");
+      router.push("/login");
+      return;
+    }
     try {
       setBookingLoading(true);
       await publicApi.bookHotel(payload);
@@ -155,6 +161,11 @@ export default function HomePage() {
   };
 
   const onBookExperience = async (payload: { experienceId: string; date: string; guests: number }) => {
+    if (user?.role !== "tourist") {
+      toast.error("Please login as a tourist to book.");
+      router.push("/login");
+      return;
+    }
     try {
       setBookingLoading(true);
       await publicApi.bookExperience(payload);
@@ -197,8 +208,8 @@ export default function HomePage() {
                 <p className="text-3xl font-extrabold leading-none text-[var(--color-midnight)]">{formatCount(stat.value)}</p>
                 <div className="mt-2 flex items-center justify-between gap-2">
                   <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-slate-500">{stat.label}</p>
-                  <span className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.12em] ${stat.live ? "bg-[rgba(15,118,110,0.1)] text-[var(--color-teal)]" : "bg-[rgba(217,164,65,0.16)] text-[#8a6117]"}`}>
-                    {stat.live ? "Live" : "Fallback"}
+                  <span className="rounded-full bg-[rgba(15,118,110,0.1)] px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.12em] text-[var(--color-teal)]">
+                    API
                   </span>
                 </div>
               </div>
@@ -225,7 +236,9 @@ export default function HomePage() {
           action={{ label: "All destinations", href: "/destinations" }}
         />
         <div className="mt-9 grid gap-5 lg:grid-cols-[1.12fr_0.88fr]">
-          {featuredDestination ? (
+          {loading && !featuredDestination ? (
+            <div className="lg:col-span-2"><LoadingSkeleton count={3} /></div>
+          ) : featuredDestination ? (
             <MotionReveal><DestinationCard item={featuredDestination} variant="featured" /></MotionReveal>
           ) : (
             <EmptyState title="No destinations published yet" description="Admin destination stories will appear here after publishing." />
@@ -268,7 +281,7 @@ export default function HomePage() {
             ) : (
               <div className="grid gap-6 lg:grid-cols-3">
                 {featuredHotels.map((hotel) => (
-                  <HotelCard key={hotel.id || hotel.name} item={hotel} variant="featured" onBook={hotel.id ? onBookHotel : undefined} bookingLoading={bookingLoading} />
+                  <HotelCard key={hotel.id || hotel.name} item={hotel} variant="featured" onBook={hotel.id ? onBookHotel : undefined} bookingLoading={bookingLoading} requiresLogin={user?.role !== "tourist"} />
                 ))}
               </div>
             )}
@@ -296,7 +309,7 @@ export default function HomePage() {
           ) : (
             <div className="grid gap-6 lg:grid-cols-3">
               {featuredExperiences.map((item) => (
-                <ExperienceCard key={item.id || item.name} item={item} onBook={item.id ? onBookExperience : undefined} bookingLoading={bookingLoading} />
+                <ExperienceCard key={item.id || item.name} item={item} onBook={item.id ? onBookExperience : undefined} bookingLoading={bookingLoading} requiresLogin={user?.role !== "tourist"} />
               ))}
             </div>
           )}
@@ -328,15 +341,19 @@ export default function HomePage() {
           <SectionHeader
             eyebrow="AI recommendation surface"
             title="Matches that explain why they belong to this tourist."
-            description={aiRecommendations.length ? "These recommendations are coming from the live JourniQ recommendation endpoint." : "Fallback examples appear only when the recommendation endpoint is unavailable or empty."}
+            description={aiRecommendations.length ? "These recommendations are coming from the live JourniQ recommendation endpoint." : "No recommendation cards are shown until the backend returns model results."}
           />
           <ButtonLink href="/recommendations" variant="secondary" className="mt-6">Open recommendations <ArrowRight size={16} /></ButtonLink>
         </div>
-        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-          {visibleRecommendations.map((item) => (
-            <RecommendationCard key={item.id || item.name} item={item} />
-          ))}
-        </div>
+        {visibleRecommendations.length ? (
+          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            {visibleRecommendations.map((item) => (
+              <RecommendationCard key={item.id || item.name} item={item} />
+            ))}
+          </div>
+        ) : (
+          <EmptyState title="No live AI recommendations yet" description="Recommendations will appear here after the backend returns model-ranked items for the current traveller profile." />
+        )}
       </section>
 
       <section className="tourist-container mt-24">

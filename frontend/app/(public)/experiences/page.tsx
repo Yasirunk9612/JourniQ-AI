@@ -2,6 +2,7 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import CTASection from "@/components/public/CTASection";
 import ExperienceCard from "@/components/public/ExperienceCard";
@@ -10,12 +11,15 @@ import SectionHeader from "@/components/public/SectionHeader";
 import { Badge, Button, EmptyState, ErrorState, Field, LoadingSkeleton, SelectField } from "@/components/public/TouristUI";
 import { publicApi } from "@/lib/publicApi";
 import { Experience } from "@/lib/public-types";
+import { useAuth } from "@/context/AuthContext";
 import { Bike, Flame, HeartHandshake, Mountain, ShieldCheck, Waves } from "lucide-react";
 import { formatLkr } from "@/lib/currency";
 
 const categories = ["", "Village culture", "Traditional food", "Surfing", "Hiking", "Safari", "Wellness", "Cycling", "Camping"];
 
 export default function ExperiencesPage() {
+  const { user } = useAuth();
+  const router = useRouter();
   const [experiences, setExperiences] = useState<Experience[]>([]);
   const [district, setDistrict] = useState("");
   const [category, setCategory] = useState("");
@@ -56,6 +60,11 @@ export default function ExperiencesPage() {
   }, [experiences, maxPrice, sort]);
 
   const onBook = async (payload: { experienceId: string; date: string; guests: number }) => {
+    if (user?.role !== "tourist") {
+      toast.error("Please login as a tourist to book.");
+      router.push("/login");
+      return;
+    }
     try {
       setBookingLoading(true);
       await publicApi.bookExperience(payload);
@@ -156,7 +165,7 @@ export default function ExperiencesPage() {
           {!loading && !error && visible.length === 0 ? <EmptyState title="No approved experiences found" description="Try another district or category. Experience results come from the live provider API." actionLabel="Reload experiences" onAction={() => load()} /> : null}
           {!loading && !error && visible.length > 0 ? (
             <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-              {visible.map((item) => <ExperienceCard key={item.id || item.name} item={item} onBook={onBook} bookingLoading={bookingLoading} />)}
+              {visible.map((item) => <ExperienceCard key={item.id || item.name} item={item} onBook={onBook} bookingLoading={bookingLoading} requiresLogin={user?.role !== "tourist"} />)}
             </div>
           ) : null}
         </div>

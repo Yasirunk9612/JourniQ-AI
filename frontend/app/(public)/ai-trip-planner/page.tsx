@@ -20,12 +20,6 @@ const steps = [
   "Notes",
 ];
 
-const sampleDays = [
-  { title: "Day 1: Colombo soft landing", morning: "Arrive, check in, recover slowly.", afternoon: "Explore Galle Face and heritage streets.", evening: "Dinner near the coast." },
-  { title: "Day 2: Cultural triangle", morning: "Travel toward Sigiriya.", afternoon: "Rock fortress or village experience.", evening: "Quiet stay near Dambulla." },
-  { title: "Day 3: Hill country rhythm", morning: "Scenic transfer into tea country.", afternoon: "Tea estate walk and viewpoint.", evening: "Slow dinner in Ella." },
-];
-
 export default function AITripPlannerPage() {
   const [step, setStep] = useState(0);
   const [generated, setGenerated] = useState(false);
@@ -81,7 +75,7 @@ export default function AITripPlannerPage() {
 
   return (
     <main>
-      <HeroSection compact title="Build the trip around how you actually travel." subtitle="A multi-step AI planning interface. Until a live trip-generation API exists, it creates a transparent client-side itinerary preview and tracks planner behavior for logged-in tourists." image="https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1800&q=85" eyebrow="Signature AI planner">
+      <HeroSection compact title="Build the trip around how you actually travel." subtitle="A multi-step planning interface that captures real traveller signals for JourniQ recommendations and future AI itinerary generation." image="https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1800&q=85" eyebrow="Signature AI planner">
         <div className="grid max-w-4xl gap-3 sm:grid-cols-4">
           {[
             { label: "Dates", icon: CalendarDays },
@@ -111,7 +105,7 @@ export default function AITripPlannerPage() {
           <div className="mt-7">{currentField()}</div>
           <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:justify-between">
             <Button type="button" variant="secondary" disabled={step === 0} onClick={() => setStep((v) => Math.max(0, v - 1))}><ArrowLeft size={16} /> Back</Button>
-            {step < steps.length - 1 ? <Button type="button" onClick={() => setStep((v) => Math.min(steps.length - 1, v + 1))}>Next <ArrowRight size={16} /></Button> : <Button type="submit" variant="coral"><Sparkles size={16} /> Generate preview</Button>}
+            {step < steps.length - 1 ? <Button type="button" onClick={() => setStep((v) => Math.min(steps.length - 1, v + 1))}>Next <ArrowRight size={16} /></Button> : <Button type="submit" variant="coral"><Sparkles size={16} /> Save preferences</Button>}
           </div>
         </form>
       </section>
@@ -137,22 +131,41 @@ export default function AITripPlannerPage() {
 
       {generated ? (
         <section className="tourist-container mt-16">
-          <SectionHeader eyebrow="Generated preview" title={`${form.pace} ${form.destination} itinerary`} description="This is a client-side itinerary preview. Booking actions route you to the live hotels and experiences pages." />
-          <div className="mt-8 grid gap-5 lg:grid-cols-3">
-            {sampleDays.map((day) => (
-              <article key={day.title} className="rounded-[1.75rem] border border-white/70 bg-white/90 p-6 shadow-[var(--shadow-soft)]">
-                <CalendarDays className="text-[var(--color-teal)]" />
-                <h3 className="mt-5 text-3xl leading-none text-[var(--color-midnight)]">{day.title}</h3>
-                <div className="mt-5 grid gap-3 text-sm leading-6 text-slate-600">
-                  <p><strong>Morning:</strong> {day.morning}</p>
-                  <p><strong>Afternoon:</strong> {day.afternoon}</p>
-                  <p><strong>Evening:</strong> {day.evening}</p>
-                </div>
-              </article>
-            ))}
+          <SectionHeader eyebrow="Planner signals saved" title={`${form.pace} ${form.destination} travel profile`} description="JourniQ recorded these live planner inputs for personalization. A full generated day-by-day itinerary will appear here after a real itinerary-generation endpoint is connected." />
+          <div className="mt-8 grid gap-5 lg:grid-cols-[1.05fr_0.95fr]">
+            <article className="journiq-dark-panel journiq-orbit rounded-[1.75rem] p-7 text-white">
+              <CalendarDays className="text-[var(--color-gold)]" />
+              <h3 className="mt-5 text-4xl leading-none">Your current planning brief</h3>
+              <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                {[
+                  ["Destination", form.destination],
+                  ["Dates", [form.startDate, form.endDate].filter(Boolean).join(" to ") || "Flexible"],
+                  ["Travellers", `${form.travellers}`],
+                  ["Budget", form.budget],
+                  ["Pace", form.pace],
+                  ["Start", form.start || "Flexible"],
+                ].map(([label, value]) => (
+                  <div key={label} className="rounded-2xl border border-white/12 bg-white/8 p-4">
+                    <p className="text-[0.68rem] font-extrabold uppercase tracking-[0.2em] text-white/48">{label}</p>
+                    <p className="mt-2 text-sm font-extrabold text-white">{value}</p>
+                  </div>
+                ))}
+              </div>
+            </article>
+            <article className="rounded-[1.75rem] border border-[var(--color-muted)] bg-white/92 p-7 shadow-[var(--shadow-soft)]">
+              <Sparkles className="text-[var(--color-coral)]" />
+              <h3 className="mt-5 text-4xl leading-none text-[var(--color-midnight)]">Use real inventory next</h3>
+              <div className="mt-6 grid gap-4 text-sm leading-7 text-slate-600">
+                <p><strong className="text-[var(--color-midnight)]">Interests:</strong> {form.interests || "Not selected"}</p>
+                <p><strong className="text-[var(--color-midnight)]">Activities:</strong> {form.activities || "Not selected"}</p>
+                <p><strong className="text-[var(--color-midnight)]">Stay:</strong> {form.accommodation || "Flexible"}</p>
+                {form.notes ? <p><strong className="text-[var(--color-midnight)]">Notes:</strong> {form.notes}</p> : null}
+              </div>
+            </article>
           </div>
           <div className="mt-6 flex flex-wrap gap-3">
             <Button type="button" onClick={() => setGenerated(false)} variant="secondary">Edit plan</Button>
+            <Button type="button" onClick={() => window.location.assign("/recommendations")} variant="secondary">Get recommendations</Button>
             <Button type="button" onClick={() => window.location.assign("/hotels")}>Find hotels</Button>
             <Button type="button" onClick={() => window.location.assign("/experiences")} variant="coral">Book experiences</Button>
           </div>

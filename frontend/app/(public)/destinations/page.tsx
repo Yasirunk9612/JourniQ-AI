@@ -5,7 +5,6 @@ import DestinationCard from "@/components/public/DestinationCard";
 import HeroSection from "@/components/public/HeroSection";
 import SectionHeader from "@/components/public/SectionHeader";
 import { Badge, ButtonLink, EmptyState, ErrorState, Field, LoadingSkeleton, SelectField } from "@/components/public/TouristUI";
-import { destinations } from "@/lib/public-data";
 import { publicApi } from "@/lib/publicApi";
 import { Destination } from "@/lib/public-types";
 import { ArrowRight, Compass, MapPinned, Mountain, Sparkles, SunMedium } from "lucide-react";
@@ -48,18 +47,8 @@ export default function DestinationsPage() {
   }, [load]);
 
   const visible = useMemo(() => {
-    if (remoteDestinations.length > 0) {
-      return [...remoteDestinations].sort((a, b) => sort === "name" ? a.name.localeCompare(b.name) : (b.matchScore || b.rating) - (a.matchScore || a.rating));
-    }
-    const q = query.toLowerCase();
-    const rows = destinations.filter((item) => {
-      const matchesQuery = !q || [item.name, item.district, item.description, item.category].join(" ").toLowerCase().includes(q);
-      const matchesCategory = category === "All" || item.category === category;
-      const matchesRegion = region === "All" || item.province === region;
-      return matchesQuery && matchesCategory && matchesRegion;
-    });
-    return [...rows].sort((a, b) => sort === "name" ? a.name.localeCompare(b.name) : b.rating - a.rating);
-  }, [category, query, region, remoteDestinations, sort]);
+    return [...remoteDestinations].sort((a, b) => sort === "name" ? a.name.localeCompare(b.name) : (b.matchScore || b.rating) - (a.matchScore || a.rating));
+  }, [remoteDestinations, sort]);
 
   return (
     <main>

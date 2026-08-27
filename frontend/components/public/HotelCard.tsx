@@ -12,11 +12,13 @@ export default function HotelCard({
   onBook,
   bookingLoading,
   variant = "grid",
+  requiresLogin = false,
 }: {
   item: Hotel;
   onBook?: (payload: { hotelId: string; checkIn: string; checkOut: string; guests: number }) => void;
   bookingLoading?: boolean;
   variant?: "grid" | "list" | "featured";
+  requiresLogin?: boolean;
 }) {
   const checkInDate = new Date();
   const checkOutDate = new Date(checkInDate);
@@ -82,7 +84,7 @@ export default function HotelCard({
             </div>
             <Field label="Travellers" name="guests" type="number" min={1} defaultValue={1} required />
             <Button type="submit" disabled={bookingLoading} className="w-full">
-              {bookingLoading ? <InlineLoading label="Booking..." /> : "Book now"}
+              {bookingLoading ? <InlineLoading label="Booking..." /> : requiresLogin ? "Login to book" : "Book now"}
             </Button>
             <Link href={`/hotels/${item.id}`} className="text-center text-sm font-extrabold text-[var(--color-teal)]">View full hotel page</Link>
           </form>
