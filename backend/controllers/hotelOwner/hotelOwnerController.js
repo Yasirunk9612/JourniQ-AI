@@ -9,6 +9,7 @@ const {
 const { buildProviderTrends, scoreListingQuality } = require("../../services/aiTourismService");
 const { getFrontendUrl, sendEmail } = require("../../utils/emailService");
 const { bookingStatusTemplate } = require("../../utils/emailTemplates");
+const { cloudinaryUploadUrls } = require("../../utils/imageUrl");
 
 const ensureSeedBookings = async (ownerId, rooms) => {
   const count = await Booking.countDocuments({ owner: ownerId });
@@ -226,10 +227,7 @@ const getAiInsightsController = asyncHandler(async (req, res) => {
 });
 
 const uploadHotelImages = asyncHandler(async (req, res) => {
-  const files = req.files || [];
-  const urls = files
-    .map((f) => f.path || f.secure_url || f.url || null)
-    .filter(Boolean);
+  const urls = cloudinaryUploadUrls(req.files || []);
   const hotel = await getOrCreateHotel(req.user);
   hotel.images = [...hotel.images, ...urls].slice(0, 15);
   if (!hotel.previewImage && urls.length > 0) {
@@ -258,10 +256,7 @@ const uploadRoomImages = asyncHandler(async (req, res) => {
   const room = await Room.findOne({ _id: req.params.id, owner: req.user._id });
   if (!room) return res.status(404).json({ message: "Room not found." });
 
-  const files = req.files || [];
-  const urls = files
-    .map((f) => f.path || f.secure_url || f.url || null)
-    .filter(Boolean);
+  const urls = cloudinaryUploadUrls(req.files || []);
 
   const remainingSlots = Math.max(0, 5 - (room.images?.length || 0));
   const acceptedUrls = urls.slice(0, remainingSlots);

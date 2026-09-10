@@ -27,5 +27,11 @@ const normalizeImageUrl = (req, value) => {
 
 const normalizeImageUrls = (req, values = []) => values.map((value) => normalizeImageUrl(req, value)).filter(Boolean);
 
-module.exports = { normalizeImageUrl, normalizeImageUrls };
+const cloudinaryUploadUrl = (file) => {
+  const url = file?.secure_url || file?.path || file?.url || "";
+  return String(url).trim().replace(/^http:\/\/res\.cloudinary\.com\//, "https://res.cloudinary.com/");
+};
 
+const cloudinaryUploadUrls = (files = []) => files.map(cloudinaryUploadUrl).filter(Boolean);
+
+module.exports = { cloudinaryUploadUrl, cloudinaryUploadUrls, normalizeImageUrl, normalizeImageUrls };

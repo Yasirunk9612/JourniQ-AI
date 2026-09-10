@@ -37,10 +37,9 @@ RUN pip3 install --break-system-packages --no-cache-dir -r ./AI-Model-Train-main
 
 COPY backend ./backend
 COPY AI-Model-Train-main ./AI-Model-Train-main
-COPY --from=frontend-builder /app/frontend/.next ./frontend/.next
+COPY --from=frontend-builder /app/frontend/.next/standalone ./frontend
+COPY --from=frontend-builder /app/frontend/.next/static ./frontend/.next/static
 COPY --from=frontend-builder /app/frontend/public ./frontend/public
-COPY --from=frontend-builder /app/frontend/package*.json ./frontend/
-COPY --from=frontend-builder /app/frontend/node_modules ./frontend/node_modules
 COPY docker/nginx.conf.template /etc/nginx/templates/journiq.conf.template
 COPY docker/supervisord.conf /etc/supervisor/conf.d/journiq.conf
 COPY docker/start.sh /app/start.sh
@@ -51,4 +50,3 @@ RUN chmod +x /app/start.sh \
 EXPOSE 10000
 
 CMD ["/app/start.sh"]
-

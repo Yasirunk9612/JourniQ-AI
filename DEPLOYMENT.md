@@ -182,6 +182,9 @@ Socket.IO:
 ## Notes For Free Hosting
 
 - Render free services sleep after idle time, so the first request can be slow.
+- The first request after sleep can take 30-60 seconds because Render has to restart the Docker container, Express, Next.js, Nginx, and the Python-capable runtime.
+- The Docker setup uses Next.js standalone output to reduce the runtime image and start the frontend with `node server.js`.
+- The Supervisor `running as root` message is only a container warning. This setup sets `user=root` explicitly because the container intentionally runs all three demo processes in one service.
 - Do not store user uploads on local disk.
 - Keep TensorFlow out of the runtime image unless you add a live LSTM endpoint.
 - Keep model and CSV files committed if they are small enough for GitHub. If they become too large, use Git LFS or download them during build from a trusted storage location.

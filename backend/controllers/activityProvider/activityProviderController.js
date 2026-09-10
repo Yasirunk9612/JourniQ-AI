@@ -9,6 +9,7 @@ const {
 const { scoreListingQuality } = require("../../services/aiTourismService");
 const { getFrontendUrl, sendEmail } = require("../../utils/emailService");
 const { bookingStatusTemplate } = require("../../utils/emailTemplates");
+const { cloudinaryUploadUrls } = require("../../utils/imageUrl");
 
 const getDashboard = asyncHandler(async (req, res) => {
   const experiences = await Experience.find({ owner: req.user._id });
@@ -83,10 +84,7 @@ const deleteExperience = asyncHandler(async (req, res) => {
 const uploadExperienceImages = asyncHandler(async (req, res) => {
   const exp = await Experience.findOne({ _id: req.params.id, owner: req.user._id });
   if (!exp) return res.status(404).json({ message: "Experience not found." });
-  const files = req.files || [];
-  const urls = files
-    .map((f) => f.path || f.secure_url || f.url || null)
-    .filter(Boolean);
+  const urls = cloudinaryUploadUrls(req.files || []);
   exp.images = [...exp.images, ...urls].slice(0, 15);
   if (!exp.previewImage && urls.length > 0) exp.previewImage = urls[0];
   await exp.save();
@@ -214,10 +212,7 @@ const updateProfile = asyncHandler(async (req, res) => {
 
 const uploadProfileImages = asyncHandler(async (req, res) => {
   const profile = await getOrCreateProfile(req.user);
-  const files = req.files || [];
-  const urls = files
-    .map((f) => f.path || f.secure_url || f.url || null)
-    .filter(Boolean);
+  const urls = cloudinaryUploadUrls(req.files || []);
   profile.images = [...profile.images, ...urls].slice(0, 15);
   if (!profile.previewImage && urls.length > 0) profile.previewImage = urls[0];
   await profile.save();
