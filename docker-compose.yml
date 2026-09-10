@@ -1,0 +1,17 @@
+services:
+  journiq:
+    build:
+      context: .
+      args:
+        NEXT_PUBLIC_API_URL: /api
+    ports:
+      - "10000:10000"
+    env_file:
+      - ./backend/.env
+    environment:
+      PORT: 10000
+      BACKEND_PORT: 5008
+      FRONTEND_PORT: 3000
+      CORS_ORIGINS: http://localhost:10000
+      FRONTEND_URL: http://localhost:10000
+      NEXT_PUBLIC_API_URL: /api

@@ -15,6 +15,7 @@ const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 const { setupChatSocket } = require("./services/chatSocket");
 
 const app = express();
+app.set("trust proxy", 1);
 connectDB();
 const allowedOrigins = (process.env.CORS_ORIGINS || "http://localhost:3000")
   .split(",")

@@ -11,6 +11,7 @@ const { ChatMessage, conversationResponse, getOrCreateListingConversation, messa
 const { buildAssistantReply } = require("../../services/aiAssistantService");
 const { getFrontendUrl, sendMany } = require("../../utils/emailService");
 const { bookingRequestTemplate, travelerBookingReceivedTemplate, formatDate } = require("../../utils/emailTemplates");
+const { normalizeImageUrl, normalizeImageUrls } = require("../../utils/imageUrl");
 
 const nextId = (prefix) => `${prefix}-${Date.now().toString().slice(-8)}${Math.floor(Math.random() * 90 + 10)}`;
 
@@ -28,7 +29,7 @@ const emitBookingChat = async (req, conversation) => {
   });
 };
 
-const destinationPayload = (destination, matchScore = null, matchReasons = []) => ({
+const destinationPayload = (req, destination, matchScore = null, matchReasons = []) => ({
   id: String(destination._id),
   slug: destination.slug,
   name: destination.name,
@@ -36,7 +37,7 @@ const destinationPayload = (destination, matchScore = null, matchReasons = []) =
   province: destination.province,
   category: destination.category,
   description: destination.description,
-  image: destination.image,
+  image: normalizeImageUrl(req, destination.image),
   bestTime: destination.bestTime,
   tags: destination.tags || [],
   interests: destination.interests || [],
@@ -93,7 +94,7 @@ const getPublicDestinations = asyncHandler(async (req, res) => {
   const destinations = rows
     .map((destination) => {
       const scored = scoreDestinationForUser(destination, req.user);
-      return destinationPayload(destination, scored.score, scored.reasons);
+      return destinationPayload(req, destination, scored.score, scored.reasons);
     })
     .sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0) || b.rating - a.rating);
 
@@ -106,7 +107,7 @@ const getPublicDestinationBySlug = asyncHandler(async (req, res) => {
   const scored = scoreDestinationForUser(destination, req.user);
   res.json({
     destination: {
-      ...destinationPayload(destination, scored.score, scored.reasons),
+      ...destinationPayload(req, destination, scored.score, scored.reasons),
       blogHtml: destination.blogHtml,
       blogCss: destination.blogCss,
       createdAt: destination.createdAt,
@@ -147,8 +148,8 @@ const getPublicHotels = asyncHandler(async (req, res) => {
       rooms: stats?.totalRooms || 0,
       rating: 4.6,
       price: stats?.minPrice ? `$${stats.minPrice} / night` : "Contact for price",
-      image: h.previewImage || h.images?.[0] || "",
-      images: h.images || [],
+      image: normalizeImageUrl(req, h.previewImage || h.images?.[0] || ""),
+      images: normalizeImageUrls(req, h.images || []),
       facilities: h.facilities || [],
       description: h.description || "Authentic Sri Lankan stay experience.",
       ownerName: h.owner?.name || "Hotel Owner",
@@ -178,8 +179,8 @@ const getPublicHotelById = asyncHandler(async (req, res) => {
       rooms: rooms.reduce((sum, room) => sum + room.availableRooms, 0),
       rating: 4.6,
       price: minPrice ? `$${minPrice} / night` : "Contact for price",
-      image: hotel.previewImage || hotel.images?.[0] || "",
-      images: hotel.images || [],
+      image: normalizeImageUrl(req, hotel.previewImage || hotel.images?.[0] || ""),
+      images: normalizeImageUrls(req, hotel.images || []),
       facilities: hotel.facilities || [],
       description: hotel.description || "Authentic Sri Lankan stay experience.",
       ownerName: hotel.owner?.name || "Hotel Owner",
@@ -192,7 +193,7 @@ const getPublicHotelById = asyncHandler(async (req, res) => {
       capacity: room.capacity,
       amenities: room.amenities || [],
       availableRooms: room.availableRooms,
-      images: room.images || [],
+      images: normalizeImageUrls(req, room.images || []),
       status: room.status,
     })),
   });
@@ -214,8 +215,8 @@ const getPublicExperiences = asyncHandler(async (req, res) => {
       category: e.category,
       district: e.district,
       description: e.description,
-      image: e.previewImage || e.images?.[0] || "",
-      images: e.images || [],
+      image: normalizeImageUrl(req, e.previewImage || e.images?.[0] || ""),
+      images: normalizeImageUrls(req, e.images || []),
       price: e.price,
       duration: e.duration,
       maxGuests: e.maxGuests,
@@ -247,8 +248,8 @@ const getPublicExperienceById = asyncHandler(async (req, res) => {
       district: experience.district,
       location: experience.location,
       description: experience.description,
-      image: experience.previewImage || experience.images?.[0] || "",
-      images: experience.images || [],
+      image: normalizeImageUrl(req, experience.previewImage || experience.images?.[0] || ""),
+      images: normalizeImageUrls(req, experience.images || []),
       price: experience.price,
       duration: experience.duration,
       maxGuests: experience.maxGuests,
