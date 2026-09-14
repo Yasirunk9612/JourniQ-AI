@@ -1,5 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 import { ArrowRight, CalendarDays, MapPin } from "lucide-react";
 import { Destination } from "@/lib/public-types";
 import { Badge, Rating } from "./TouristUI";
@@ -13,6 +13,7 @@ export default function DestinationCard({
 }) {
   const isFeatured = variant === "featured";
   const href = item.slug ? `/destinations/${item.slug}` : `/destinations?destination=${encodeURIComponent(item.name)}`;
+  const [imageFailed, setImageFailed] = useState(false);
 
   return (
     <article
@@ -20,13 +21,12 @@ export default function DestinationCard({
         isFeatured ? "min-h-[460px]" : variant === "compact" ? "min-h-64" : "min-h-[390px]"
       }`}
     >
-      {item.image ? (
-        <Image
+      {item.image && !imageFailed ? (
+        <img
           src={item.image}
           alt={`${item.name}, ${item.district}`}
-          fill
-          sizes={isFeatured ? "(min-width: 1024px) 50vw, 100vw" : "(min-width: 1024px) 33vw, 100vw"}
-          className="object-cover transition duration-700 group-hover:scale-105"
+          onError={() => setImageFailed(true)}
+          className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105"
         />
       ) : (
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(217,164,65,0.38),transparent_26%),linear-gradient(135deg,var(--color-forest),var(--color-midnight))]" />

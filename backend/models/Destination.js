@@ -24,5 +24,8 @@ const destinationSchema = new mongoose.Schema(
 );
 
 destinationSchema.index({ name: "text", district: "text", category: "text", tags: "text", interests: "text" });
+destinationSchema.index({ status: 1, createdAt: -1 });
+destinationSchema.index({ status: 1, province: 1 });
+destinationSchema.index({ status: 1, category: 1 });
 
 module.exports = mongoose.model("Destination", destinationSchema);

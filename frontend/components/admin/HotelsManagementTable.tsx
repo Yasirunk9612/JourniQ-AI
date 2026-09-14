@@ -32,7 +32,7 @@ export default function HotelsManagementTable({
             <tr>
               <th className="px-5 py-4">Hotel</th>
               <th>Owner</th>
-              <th>District</th>
+              <th>Location</th>
               <th>Category</th>
               <th>Rooms</th>
               <th>Status</th>
@@ -49,7 +49,7 @@ export default function HotelsManagementTable({
                   <p className="mt-1 text-xs text-slate-500">{hotel.id}</p>
                 </td>
                 <td>{hotel.owner}</td>
-                <td>{hotel.district || "-"}</td>
+                <td><MapLink hotel={hotel} /></td>
                 <td className="capitalize">{String(hotel.category || "hotel").replace("_", " ")}</td>
                 <td>{hotel.rooms}</td>
                 <td><AdminStatusBadge status={hotel.status} /></td>
@@ -75,6 +75,7 @@ function HotelApprovalCard({ hotel, onStatus, updatingId }: { hotel: AdminHotel;
           <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--color-teal)]">{hotel.district || "Sri Lanka"}</p>
           <h3 className="mt-2 text-xl font-extrabold text-[var(--color-midnight)]">{hotel.hotelName}</h3>
           <p className="mt-1 text-sm text-slate-500">{hotel.owner}</p>
+          <div className="mt-3"><MapLink hotel={hotel} /></div>
         </div>
         <AdminStatusBadge status={hotel.status} />
       </div>
@@ -88,6 +89,13 @@ function HotelApprovalCard({ hotel, onStatus, updatingId }: { hotel: AdminHotel;
       </div>
     </article>
   );
+}
+
+function MapLink({ hotel }: { hotel: Pick<AdminHotel, "address" | "district" | "latitude" | "longitude"> }) {
+  const hasCoords = hotel.latitude && hotel.longitude;
+  const query = hasCoords ? `${hotel.latitude},${hotel.longitude}` : [hotel.address, hotel.district, "Sri Lanka"].filter(Boolean).join(", ");
+  if (!query.trim()) return <span className="text-slate-400">No location</span>;
+  return <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`} target="_blank" rel="noreferrer" className="font-extrabold text-[var(--color-teal)] hover:underline">Open map</a>;
 }
 
 function Metric({ label, value }: { label: string; value: string }) {

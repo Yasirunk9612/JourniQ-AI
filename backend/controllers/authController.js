@@ -95,6 +95,9 @@ const register = async (req, res) => {
       businessName,
       businessRegistrationNumber,
       district,
+      address,
+      latitude,
+      longitude,
       activityCategory,
       touristPreferences,
     } = req.body;
@@ -143,6 +146,9 @@ const register = async (req, res) => {
       businessName: businessName || "",
       businessRegistrationNumber: businessRegistrationNumber || "",
       district: district || "",
+      address: address || "",
+      latitude: Number(latitude) || 0,
+      longitude: Number(longitude) || 0,
       activityCategory: activityCategory || "",
       touristPreferences: role === "tourist" ? normalizeTouristPreferences(touristPreferences) : undefined,
     });

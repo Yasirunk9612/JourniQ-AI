@@ -23,7 +23,7 @@ export default function SearchBar({ compact = false }: { compact?: boolean }) {
   };
 
   const form = (
-    <form onSubmit={submit} className={`grid gap-3 ${compact ? "md:grid-cols-[1.4fr_1fr_0.8fr_auto]" : "lg:grid-cols-[1.2fr_1fr_0.8fr_1fr_auto]"}`}>
+    <form onSubmit={submit} className={`grid gap-3 ${compact ? "md:grid-cols-[1.4fr_1fr_0.8fr_auto]" : "lg:grid-cols-[1.35fr_1fr_0.8fr_auto]"}`}>
       <label className="relative">
         <span className="sr-only">Destination</span>
         <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-teal)]" size={18} />
@@ -39,7 +39,7 @@ export default function SearchBar({ compact = false }: { compact?: boolean }) {
         <Users className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-teal)]" size={18} />
         <input type="number" min={1} value={travellers} onChange={(e) => setTravellers(Number(e.target.value))} className="min-h-14 w-full rounded-2xl border border-white/60 bg-white/92 pl-11 pr-4 text-sm font-semibold text-[var(--color-midnight)] shadow-sm outline-none focus:ring-4 focus:ring-[rgba(217,164,65,0.22)]" />
       </label>
-      {!compact ? (
+      {compact ? (
         <label className="relative">
           <span className="sr-only">Interest</span>
           <Sparkles className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-teal)]" size={18} />

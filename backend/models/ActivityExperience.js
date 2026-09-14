@@ -25,4 +25,8 @@ const activityExperienceSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+activityExperienceSchema.index({ status: 1, updatedAt: -1 });
+activityExperienceSchema.index({ status: 1, district: 1 });
+activityExperienceSchema.index({ status: 1, category: 1 });
+
 module.exports = mongoose.model("ActivityExperience", activityExperienceSchema);

@@ -14,7 +14,7 @@ const values = [
 export default function AboutPage() {
   return (
     <main>
-      <HeroSection compact title="A Sri Lankan tourism platform built for better discovery." subtitle="JourniQ AI combines destination storytelling, explainable recommendations, and local provider access into a fairer travel experience." image="https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?auto=format&fit=crop&w=1800&q=85" eyebrow="About JourniQ AI">
+      <HeroSection compact title="A Sri Lankan tourism platform built for better discovery." subtitle="JourniQ AI combines destination storytelling, explainable recommendations, and local provider access into a fairer travel experience." image="/images/Yapahuwa Rock Fortress Sri Lanka.jpg" eyebrow="About JourniQ AI">
         <div className="flex flex-wrap gap-3">
           <Badge tone="gold">Low-friction local discovery</Badge>
           <Badge tone="teal">Explainable AI</Badge>

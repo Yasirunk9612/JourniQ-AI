@@ -1,6 +1,7 @@
 const asyncHandler = require("../../utils/asyncHandler");
 const { parseStatus } = require("../../utils/adminValidators");
 const Destination = require("../../models/Destination");
+const CommunityProfile = require("../../models/CommunityProfile");
 const {
   COMMISSION_RATE,
   normalizeCommissionRows,
@@ -25,6 +26,10 @@ const cleanCode = (value) => String(value || "")
   .replace(/<\/?style[^>]*>/gi, "")
   .replace(/\son\w+="[^"]*"/gi, "")
   .replace(/\son\w+='[^']*'/gi, "");
+
+const cleanImageUrl = (value) => String(value || "")
+  .trim()
+  .replace(/^http:\/\/res\.cloudinary\.com\//, "https://res.cloudinary.com/");
 
 const destinationResponse = (destination) => ({
   id: String(destination._id),
@@ -57,7 +62,7 @@ const normalizeDestinationPayload = (body, userId) => {
     province: body.province || "",
     category: body.category,
     description: body.description,
-    image: body.image || "",
+    image: cleanImageUrl(body.image),
     bestTime: body.bestTime || "",
     tags: Array.isArray(body.tags) ? body.tags : String(body.tags || "").split(",").map((item) => item.trim()).filter(Boolean),
     interests: Array.isArray(body.interests) ? body.interests : String(body.interests || "").split(",").map((item) => item.trim()).filter(Boolean),
@@ -165,7 +170,7 @@ const deleteUser = asyncHandler(async (req, res) => {
 const getApprovals = asyncHandler(async (_req, res) => {
   const users = await User.find({ role: { $in: ["hotel_owner", "activity_provider"] }, status: "pending" })
     .sort({ createdAt: -1 })
-    .select("name email role businessName district createdAt status");
+    .select("name email role businessName district address latitude longitude createdAt status");
   res.json({ users });
 });
 
@@ -175,6 +180,55 @@ const approveApproval = asyncHandler(async (req, res) => {
   if (!["hotel_owner", "activity_provider"].includes(user.role)) return res.status(400).json({ message: "Only provider accounts can be approved." });
   user.status = "active";
   await user.save();
+
+  if (user.role === "hotel_owner") {
+    await Hotel.findOneAndUpdate(
+      { owner: user._id },
+      {
+        $setOnInsert: {
+          owner: user._id,
+          hotelName: user.businessName || `${user.name}'s Hotel`,
+          description: "",
+          district: user.district || "",
+          address: user.address || "",
+          latitude: user.latitude || 0,
+          longitude: user.longitude || 0,
+          category: "Hotel",
+          facilities: [],
+          images: [],
+          previewImage: "",
+        },
+        $set: { verificationStatus: "approved" },
+      },
+      { upsert: true, new: true }
+    );
+  }
+
+  if (user.role === "activity_provider") {
+    await CommunityProfile.findOneAndUpdate(
+      { owner: user._id },
+      {
+        $setOnInsert: {
+          owner: user._id,
+          providerName: user.name,
+          businessName: user.businessName || "",
+          story: "",
+          district: user.district || "",
+          contactNumber: user.phone || "",
+          address: user.address || "",
+          latitude: user.latitude || 0,
+          longitude: user.longitude || 0,
+          languages: [],
+          verificationDocuments: [],
+          images: [],
+          previewImage: "",
+        },
+        $set: { verificationStatus: "approved" },
+      },
+      { upsert: true, new: true }
+    );
+  }
+
   const emailResult = await sendEmail({
     to: user.email,
     ...providerApprovedTemplate({
@@ -202,27 +256,45 @@ const rejectApproval = asyncHandler(async (req, res) => {
 });
 
 const getHotels = asyncHandler(async (_req, res) => {
-  const hotels = await Hotel.find({}).populate("owner", "name email status").sort({ createdAt: -1 });
-  const rows = await Promise.all(
-    hotels.map(async (h) => {
-      const bookings = await Booking.countDocuments({ owner: h.owner?._id || h.owner });
-      const revenueAgg = await Booking.aggregate([
-        { $match: { owner: h.owner?._id || h.owner } },
-        { $group: { _id: null, total: { $sum: "$totalAmount" } } },
-      ]);
-      return {
-        id: String(h._id),
-        hotelName: h.hotelName,
-        owner: h.owner?.name || "Unknown",
-        district: h.district,
-        category: h.category,
-        rooms: 0,
-        status: h.verificationStatus,
-        bookings,
-        revenue: revenueAgg[0]?.total || 0,
-      };
-    })
-  );
+  const hotels = await Hotel.find({})
+    .select("owner hotelName district address latitude longitude category verificationStatus createdAt")
+    .populate("owner", "name email status")
+    .sort({ createdAt: -1 })
+    .lean();
+
+  const ownerIds = hotels.map((h) => h.owner?._id || h.owner).filter(Boolean);
+  const [bookingStats, roomStats] = await Promise.all([
+    Booking.aggregate([
+      { $match: { owner: { $in: ownerIds } } },
+      { $group: { _id: "$owner", bookings: { $sum: 1 }, revenue: { $sum: "$totalAmount" } } },
+    ]),
+    Room.aggregate([
+      { $match: { owner: { $in: ownerIds } } },
+      { $group: { _id: "$owner", rooms: { $sum: 1 } } },
+    ]),
+  ]);
+
+  const bookingMap = new Map(bookingStats.map((row) => [String(row._id), row]));
+  const roomMap = new Map(roomStats.map((row) => [String(row._id), row]));
+  const rows = hotels.map((h) => {
+    const ownerId = String(h.owner?._id || h.owner);
+    const booking = bookingMap.get(ownerId);
+    const rooms = roomMap.get(ownerId);
+    return {
+      id: String(h._id),
+      hotelName: h.hotelName,
+      owner: h.owner?.name || "Unknown",
+      district: h.district,
+      address: h.address,
+      latitude: h.latitude,
+      longitude: h.longitude,
+      category: h.category,
+      rooms: rooms?.rooms || 0,
+      status: h.verificationStatus,
+      bookings: booking?.bookings || 0,
+      revenue: booking?.revenue || 0,
+    };
+  });
   res.json({ hotels: rows });
 });
 
@@ -254,19 +326,27 @@ const updateHotelStatus = asyncHandler(async (req, res) => {
 });
 
 const getExperiences = asyncHandler(async (_req, res) => {
-  const experiences = await Experience.find({}).populate("owner", "name email status").sort({ createdAt: -1 });
-  const rows = await Promise.all(
-    experiences.map(async (e) => ({
-      id: String(e._id),
-      title: e.title,
-      provider: e.owner?.name || "Unknown",
-      category: e.category,
-      district: e.district,
-      price: e.price,
-      status: e.status,
-      bookings: await ExperienceBooking.countDocuments({ experience: e._id }),
-    }))
-  );
+  const experiences = await Experience.find({})
+    .select("owner title category district price status createdAt")
+    .populate("owner", "name email status")
+    .sort({ createdAt: -1 })
+    .lean();
+  const experienceIds = experiences.map((e) => e._id);
+  const bookingStats = await ExperienceBooking.aggregate([
+    { $match: { experience: { $in: experienceIds } } },
+    { $group: { _id: "$experience", bookings: { $sum: 1 } } },
+  ]);
+  const bookingMap = new Map(bookingStats.map((row) => [String(row._id), row.bookings]));
+  const rows = experiences.map((e) => ({
+    id: String(e._id),
+    title: e.title,
+    provider: e.owner?.name || "Unknown",
+    category: e.category,
+    district: e.district,
+    price: e.price,
+    status: e.status,
+    bookings: bookingMap.get(String(e._id)) || 0,
+  }));
   res.json({ experiences: rows });
 });
 
@@ -316,6 +396,12 @@ const updateDestination = asyncHandler(async (req, res) => {
   Object.assign(destination, normalizeDestinationPayload(req.body, destination.createdBy || req.user._id));
   await destination.save();
   res.json({ message: "Destination updated.", destination: destinationResponse(destination) });
+});
+
+const uploadDestinationImage = asyncHandler(async (req, res) => {
+  const imageUrl = cleanImageUrl(req.file?.secure_url || req.file?.path || req.file?.url || "");
+  if (!imageUrl) return res.status(400).json({ message: "Destination image upload failed." });
+  res.status(201).json({ message: "Destination image uploaded.", imageUrl });
 });
 
 const deleteDestination = asyncHandler(async (req, res) => {
@@ -533,6 +619,7 @@ module.exports = {
   getDestinations,
   createDestination,
   updateDestination,
+  uploadDestinationImage,
   deleteDestination,
   getBookings,
   getAnalytics,

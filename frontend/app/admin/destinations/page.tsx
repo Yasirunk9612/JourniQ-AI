@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { CheckCircle2, FileCode2, Globe2, ImagePlus, MapPinned, Pencil, Plus, Search, Sparkles, Trash2, X } from "lucide-react";
+import { CheckCircle2, FileCode2, Globe2, ImagePlus, Loader2, MapPinned, Pencil, Plus, Search, Sparkles, Trash2, Upload, X } from "lucide-react";
 import { AdminDestinationInput, adminApi } from "@/lib/adminApi";
 import { Destination } from "@/lib/public-types";
 
@@ -39,6 +39,7 @@ export default function AdminDestinationsPage() {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
@@ -139,6 +140,24 @@ export default function AdminDestinationsPage() {
     }
   };
 
+  const uploadHeroImage = async (file?: File) => {
+    if (!file) return;
+    setUploadingImage(true);
+    setError("");
+    setMessage("");
+    try {
+      const data = new FormData();
+      data.append("image", file);
+      const res = await adminApi.uploadDestinationImage(data);
+      setForm((prev) => ({ ...prev, image: res.imageUrl }));
+      setMessage("Hero image uploaded to Cloudinary.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not upload destination image.");
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <section className="overflow-hidden rounded-[28px] border border-emerald-100 bg-emerald-950 text-white shadow-sm">
@@ -214,10 +233,20 @@ export default function AdminDestinationsPage() {
 
           <label className="mt-4 grid gap-1.5 text-sm font-semibold text-emerald-950">
             Hero image URL
-            <div className="flex items-center gap-2 rounded-2xl border border-emerald-100 px-4 py-3 focus-within:border-emerald-600">
+            <div className="flex flex-col gap-3 rounded-2xl border border-emerald-100 p-3 focus-within:border-emerald-600 sm:flex-row sm:items-center">
               <ImagePlus className="h-4 w-4 text-emerald-700" />
               <input value={form.image || ""} onChange={(e) => setForm((prev) => ({ ...prev, image: e.target.value }))} className="w-full bg-transparent outline-none" placeholder="Cloudinary or image URL" />
+              <label className="inline-flex min-h-10 shrink-0 cursor-pointer items-center justify-center gap-2 rounded-xl bg-emerald-800 px-4 text-sm font-extrabold text-white hover:bg-emerald-900">
+                {uploadingImage ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                {uploadingImage ? "Uploading" : "Upload"}
+                <input type="file" accept="image/*" disabled={uploadingImage} onChange={(e) => void uploadHeroImage(e.target.files?.[0])} className="hidden" />
+              </label>
             </div>
+            {form.image ? (
+              <div className="mt-3 overflow-hidden rounded-2xl border border-emerald-100 bg-emerald-50">
+                <img src={form.image} alt="Destination hero preview" className="h-56 w-full object-cover" />
+              </div>
+            ) : null}
           </label>
 
           <label className="mt-4 grid gap-1.5 text-sm font-semibold text-emerald-950">

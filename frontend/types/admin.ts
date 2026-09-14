@@ -9,6 +9,9 @@ export interface AdminUser {
   status: AdminStatus;
   businessName?: string;
   district?: string;
+  address?: string;
+  latitude?: number;
+  longitude?: number;
   createdAt: string;
 }
 
@@ -28,6 +31,9 @@ export interface AdminHotel {
   hotelName: string;
   owner: string;
   district: string;
+  address?: string;
+  latitude?: number;
+  longitude?: number;
   category: "villa" | "resort" | "guest_house" | "hotel";
   rooms: number;
   status: AdminStatus;

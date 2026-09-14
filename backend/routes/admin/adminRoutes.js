@@ -4,6 +4,7 @@ const { allowRoles } = require("../../middleware/roleMiddleware");
 const { validateRequest } = require("../../middleware/validationMiddleware");
 const { aiMonitoringTestSchema } = require("../../utils/adminValidators");
 const controller = require("../../controllers/admin/adminController");
+const destinationUpload = require("../../middleware/destinationUploadMiddleware");
 
 const router = express.Router();
 router.use(protect, allowRoles("admin"));
@@ -25,6 +26,7 @@ router.get("/experiences", controller.getExperiences);
 router.patch("/experiences/:id/status", controller.updateExperienceStatus);
 
 router.get("/destinations", controller.getDestinations);
+router.post("/destinations/image", destinationUpload.single("image"), controller.uploadDestinationImage);
 router.post("/destinations", controller.createDestination);
 router.put("/destinations/:id", controller.updateDestination);
 router.delete("/destinations/:id", controller.deleteDestination);

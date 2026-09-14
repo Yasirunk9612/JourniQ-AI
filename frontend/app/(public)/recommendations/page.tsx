@@ -72,7 +72,7 @@ export default function RecommendationsPage() {
 
   return (
     <main>
-      <HeroSection compact title="Personalized Sri Lanka recommendations from your trained tourism model." subtitle="Tell JourniQ AI what kind of trip you want. The system ranks destinations, stays, and experiences using the trained dataset, SVM model selection, seasonal demand, and preference matching." image="https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?auto=format&fit=crop&w=1800&q=85" eyebrow={user ? `Welcome back, ${user.name}` : "AI recommendations"}>
+      <HeroSection compact title="Personalized Sri Lanka recommendations from your trained tourism model." subtitle="Tell JourniQ AI what kind of trip you want. The system ranks destinations, stays, and experiences using the trained dataset, SVM model selection, seasonal demand, and preference matching." image="/images/📍Sri Lanka.jpg" eyebrow={user ? `Welcome back, ${user.name}` : "AI recommendations"}>
         <div className="grid max-w-4xl gap-3 sm:grid-cols-3">
           {[
             { label: "Preference input", icon: SlidersHorizontal },

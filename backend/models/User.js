@@ -91,6 +91,19 @@ const userSchema = new mongoose.Schema(
       trim: true,
       default: "",
     },
+    address: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    latitude: {
+      type: Number,
+      default: 0,
+    },
+    longitude: {
+      type: Number,
+      default: 0,
+    },
     activityCategory: {
       type: String,
       trim: true,

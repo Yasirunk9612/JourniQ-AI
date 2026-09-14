@@ -10,17 +10,22 @@ import {
   Brain,
   Building2,
   CalendarCheck,
+  Camera,
+  Compass,
   HeartHandshake,
+  Hotel as HotelIcon,
   Map,
   Mountain,
+  Plane,
   RefreshCcw,
+  Route,
   Sparkles,
+  Utensils,
   Waves,
 } from "lucide-react";
 import CTASection from "@/components/public/CTASection";
 import DestinationCard from "@/components/public/DestinationCard";
 import ExperienceCard from "@/components/public/ExperienceCard";
-import HeroSection from "@/components/public/HeroSection";
 import HotelCard from "@/components/public/HotelCard";
 import LiveIslandBoard from "@/components/public/LiveIslandBoard";
 import MotionReveal from "@/components/public/MotionReveal";
@@ -55,6 +60,7 @@ export default function HomePage() {
   const [liveExperiences, setLiveExperiences] = useState<Experience[]>([]);
   const [aiRecommendations, setAiRecommendations] = useState<Recommendation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [recommendationsLoading, setRecommendationsLoading] = useState(false);
   const [dataNotice, setDataNotice] = useState("");
   const [bookingLoading, setBookingLoading] = useState(false);
   const primaryBudget = user?.touristPreferences?.budgets?.[0] || "";
@@ -77,17 +83,10 @@ export default function HomePage() {
     setDataNotice("");
     const issues: string[] = [];
 
-    const [destinationResult, hotelResult, experienceResult, recommendationResult] = await Promise.allSettled([
+    const [destinationResult, hotelResult, experienceResult] = await Promise.allSettled([
       publicApi.getDestinations(),
       publicApi.getHotels(),
       publicApi.getExperiences(),
-      publicApi.getPersonalizedRecommendations({
-        preferences: preferenceText,
-        country: user?.country || "",
-        budget: primaryBudget,
-        type: "all",
-        limit: 6,
-      }),
     ]);
 
     if (destinationResult.status === "fulfilled") {
@@ -108,21 +107,39 @@ export default function HomePage() {
       issues.push("experiences");
     }
 
-    if (recommendationResult.status === "fulfilled") {
-      setAiRecommendations(recommendationResult.value.recommendations || []);
-    } else {
-      issues.push("AI recommendations");
-    }
-
     if (issues.length) {
       setDataNotice(`Live ${issues.join(", ")} data could not be loaded. The page is showing only the data that came from the backend.`);
     }
     setLoading(false);
+  }, []);
+
+  const loadRecommendations = useCallback(async () => {
+    setRecommendationsLoading(true);
+    try {
+      const result = await publicApi.getPersonalizedRecommendations({
+        preferences: preferenceText,
+        country: user?.country || "",
+        budget: primaryBudget,
+        type: "all",
+        limit: 6,
+      });
+      setAiRecommendations(result.recommendations || []);
+    } catch {
+      setAiRecommendations([]);
+    } finally {
+      setRecommendationsLoading(false);
+    }
   }, [preferenceText, primaryBudget, user?.country]);
 
   useEffect(() => {
     loadHomeData();
   }, [loadHomeData]);
+
+  useEffect(() => {
+    if (!loading) {
+      loadRecommendations();
+    }
+  }, [loadRecommendations, loading]);
 
   const destinations = liveDestinations;
   const hotels = liveHotels;
@@ -134,6 +151,45 @@ export default function HomePage() {
   const featuredExperiences = experiences.slice(0, 3);
   const visibleRecommendations = recommendations.slice(0, 3);
   const categories = Array.from(new Set(experiences.map((item) => String(item.category).replace("_", " ")))).slice(0, 8);
+  const dreamTiles = [
+    {
+      label: "Golden beaches",
+      text: "Bentota, Mirissa, Unawatuna",
+      icon: Waves,
+      tone: "from-[#f8c66a] to-[#ff6b4a]",
+      image: "/images/Mirissa, Sri Lanka.jpg",
+      place: "Mirissa coast",
+      signal: "Sunset surf · Coconut Tree Hill",
+    },
+    {
+      label: "Misty highlands",
+      text: "Ella, Nuwara Eliya, tea trails",
+      icon: Mountain,
+      tone: "from-[#0f766e] to-[#9fbf72]",
+      image: "/images/📍Sri Lanka.jpg",
+      place: "Ella tea country",
+      signal: "Tuk tuk rides · Morning mist",
+    },
+    {
+      label: "Food trails",
+      text: "Hoppers, kottu, seafood nights",
+      icon: Utensils,
+      tone: "from-[#ff6b4a] to-[#d9a441]",
+      image: "/images/Pol Rotti & Coconut Sambol 🥥🍞.jpg",
+      place: "Colombo food walk",
+      signal: "Hoppers · Kottu · Crab curry",
+    },
+    {
+      label: "Culture shots",
+      text: "Temples, forts, village life",
+      icon: Camera,
+      tone: "from-[#071a22] to-[#0f766e]",
+      image: "/images/Yapahuwa Rock Fortress Sri Lanka.jpg",
+      place: "Yapahuwa & Galle",
+      signal: "Stone kingdoms · Fort sunsets",
+    },
+  ];
+  const vibeTags = ["Beaches", "Tea country", "Wildlife", "Surf", "Heritage", "Local food", "Wellness", "Adventure", "Village life"];
 
   const stats = [
     { label: "Destinations", value: liveDestinations.length },
@@ -179,39 +235,108 @@ export default function HomePage() {
   };
 
   return (
-    <main>
-      <HeroSection
-        title="Discover Sri Lanka intelligently, personally, locally."
-        subtitle="JourniQ AI turns live provider listings, destination stories, and your travel preferences into a more personal Sri Lankan journey."
-        image="https://images.unsplash.com/photo-1588598198321-9735fd52455b?auto=format&fit=crop&w=1800&q=85"
-        eyebrow="Tropical intelligence for Sri Lanka"
-      >
-        <div className="flex flex-wrap gap-3">
-          <ButtonLink href="/ai-trip-planner" variant="coral">Plan with AI <ArrowRight size={17} /></ButtonLink>
-          <ButtonLink href="/destinations" variant="secondary">Explore Sri Lanka</ButtonLink>
-        </div>
-        <div className="mt-8">
-          <SearchBar />
-        </div>
-        <div className="mt-5 flex flex-wrap items-center gap-3 text-sm font-semibold text-white/76">
-          <span className="inline-flex items-center gap-2"><BadgeCheck size={16} /> Approved provider inventory</span>
-          <span className="hidden h-1 w-1 rounded-full bg-white/50 sm:block" />
-          <span>Personalized with your tourist preferences when logged in</span>
-        </div>
-      </HeroSection>
+    <main className="overflow-hidden">
+      <section className="surface-noise relative min-h-[820px] overflow-hidden bg-[var(--color-midnight)] pt-36 text-white md:pt-40">
+        <div className="absolute inset-0 bg-cover bg-center opacity-70" style={{ backgroundImage: "url('/images/Blue Beach Island.jpg')" }} />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_18%,rgba(217,164,65,0.34),transparent_24%),linear-gradient(105deg,rgba(7,26,34,0.96)_0%,rgba(7,26,34,0.82)_46%,rgba(7,26,34,0.35)_100%)]" />
+        <div className="absolute inset-0 opacity-[0.13] journiq-map-grid" />
+        <div className="absolute -right-20 top-20 hidden h-[640px] w-[640px] rounded-full border border-white/10 lg:block" />
+        <div className="absolute left-[52%] top-28 hidden h-[460px] w-[460px] rounded-full bg-[conic-gradient(from_180deg,rgba(255,107,74,0.28),rgba(217,164,65,0.24),rgba(15,118,110,0.18),rgba(255,107,74,0.28))] blur-3xl lg:block" />
 
-      <section className="tourist-container -mt-10 relative z-20">
-        <div className="rounded-[1.75rem] border border-white/70 bg-[rgba(252,250,246,0.94)] p-4 shadow-[var(--shadow-lift)] backdrop-blur">
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {stats.map((stat) => (
-              <div key={stat.label} className="rounded-[1.25rem] bg-white/82 p-4 shadow-sm">
-                <p className="text-3xl font-extrabold leading-none text-[var(--color-midnight)]">{formatCount(stat.value)}</p>
-                <div className="mt-2 flex items-center justify-between gap-2">
-                  <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-slate-500">{stat.label}</p>
-                  <span className="rounded-full bg-[rgba(15,118,110,0.1)] px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.12em] text-[var(--color-teal)]">
-                    API
-                  </span>
+        <div className="tourist-container relative grid gap-12 pb-24 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
+          <MotionReveal>
+            <p className="inline-flex rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-black uppercase tracking-[0.22em] text-[var(--color-gold)] backdrop-blur">
+              AI-powered Sri Lanka planner
+            </p>
+            <h1 className="mt-6 max-w-4xl text-5xl font-black leading-[0.9] tracking-[-0.055em] md:text-7xl xl:text-8xl">
+              Your Sri Lanka trip, planned by AI.
+            </h1>
+            <p className="mt-6 max-w-2xl text-base leading-8 text-white/78 md:text-xl">
+              JourniQ AI blends your travel style with Sri Lankan beaches, tea country, heritage cities, wildlife, local stays, and real provider inventory.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <ButtonLink href="/ai-trip-planner" variant="coral" className="min-h-13 px-6">Generate my route <ArrowRight size={17} /></ButtonLink>
+              <ButtonLink href="/recommendations" variant="secondary" className="min-h-13 bg-white text-[var(--color-midnight)]">See AI matches</ButtonLink>
+            </div>
+            <div className="mt-8 max-w-3xl">
+              <SearchBar />
+            </div>
+            <div className="mt-7 grid max-w-2xl gap-3 sm:grid-cols-3">
+              {[
+                ["01", "Read your preferences"],
+                ["02", "Rank Sri Lanka places"],
+                ["03", "Connect bookings"],
+              ].map(([count, label]) => (
+                <div key={count} className="rounded-[1.2rem] border border-white/12 bg-white/10 p-3 backdrop-blur">
+                  <p className="text-xs font-black text-[var(--color-gold)]">{count}</p>
+                  <p className="mt-1 text-sm font-bold leading-5 text-white/78">{label}</p>
                 </div>
+              ))}
+            </div>
+          </MotionReveal>
+
+          <MotionReveal delay={0.08}>
+            <div className="relative mx-auto w-full max-w-2xl lg:mr-0">
+              <div className="rounded-[2.4rem] border border-white/16 bg-white/10 p-3 shadow-[var(--shadow-lift)] backdrop-blur-2xl">
+                <div className="overflow-hidden rounded-[2rem] bg-[var(--color-ivory)] text-[var(--color-midnight)]">
+                  <div className="grid gap-0 lg:grid-cols-[0.78fr_1.22fr]">
+                    <div className="relative min-h-[410px] bg-cover bg-center" style={{ backgroundImage: "url('/images/Galle Fort Travel Guide, Sri Lanka.jpg')" }}>
+                      <div className="absolute inset-0 bg-gradient-to-t from-[rgba(7,26,34,0.62)] to-transparent" />
+                      <div className="absolute bottom-4 left-4 right-4 rounded-[1.3rem] bg-white/90 p-4 backdrop-blur">
+                        <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--color-teal)]">Sri Lanka route</p>
+                        <p className="mt-1 text-xl font-black">Sigiriya → Ella → Mirissa</p>
+                      </div>
+                    </div>
+                    <div className="p-5">
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--color-coral)]">JourniQ AI engine</p>
+                          <h3 className="mt-2 text-2xl leading-none">Smart trip composer</h3>
+                        </div>
+                      </div>
+                      <div className="mt-6 grid gap-3">
+                        {[
+                          ["Mood", "Beach + culture + food"],
+                          ["Pace", "Balanced, 7 days"],
+                          ["Best next", featuredDestination?.name || "Ella highlands"],
+                        ].map(([label, value]) => (
+                          <div key={label} className="rounded-2xl border border-[rgba(12,59,53,0.1)] bg-white p-4">
+                            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">{label}</p>
+                            <p className="mt-1 font-black">{value}</p>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="mt-5 rounded-2xl bg-[var(--color-midnight)] p-4 text-white">
+                        <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--color-gold)]">AI confidence</p>
+                        <div className="mt-3 h-2 rounded-full bg-white/14">
+                          <div className="h-full w-[82%] rounded-full bg-[var(--color-coral)]" />
+                        </div>
+                        <p className="mt-3 text-sm text-white/66">Matches live destinations, hotels, experiences, and your traveller profile.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="absolute -left-4 top-10 hidden rounded-[1.4rem] border border-white/16 bg-white/92 p-4 text-[var(--color-midnight)] shadow-[var(--shadow-lift)] backdrop-blur lg:block">
+                <p className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.14em] text-[var(--color-teal)]"><Compass size={15} /> Live model</p>
+                <p className="mt-2 max-w-40 text-sm font-bold leading-5">SVM recommender ready for tourist intent.</p>
+              </div>
+              <div className="absolute -bottom-5 right-8 rounded-[1.5rem] border border-white/16 bg-[var(--color-coral)] p-5 text-white shadow-[var(--shadow-lift)]">
+                <p className="text-4xl font-black leading-none">{formatCount(stats.reduce((sum, item) => sum + item.value, 0))}</p>
+                <p className="mt-1 text-xs font-black uppercase tracking-[0.14em] text-white/72">Live travel items</p>
+              </div>
+            </div>
+          </MotionReveal>
+        </div>
+      </section>
+
+      <section className="tourist-container relative z-20 -mt-12">
+        <div className="rounded-[2rem] border border-white/70 bg-[rgba(252,250,246,0.94)] p-4 shadow-[var(--shadow-lift)] backdrop-blur">
+          <div className="grid gap-3 md:grid-cols-4">
+            {stats.map((stat) => (
+              <div key={stat.label} className="rounded-[1.45rem] bg-white p-5 shadow-sm">
+                <p className="text-4xl font-black leading-none text-[var(--color-midnight)]">{formatCount(stat.value)}</p>
+                <p className="mt-2 text-xs font-black uppercase tracking-[0.16em] text-slate-500">{stat.label}</p>
               </div>
             ))}
           </div>
@@ -226,13 +351,53 @@ export default function HomePage() {
         </div>
       </section>
 
+      <section className="tourist-container mt-24">
+        <div className="grid gap-5 lg:grid-cols-4">
+          {dreamTiles.map((tile) => {
+            const Icon = tile.icon;
+            return (
+              <MotionReveal key={tile.label}>
+                <article className="journiq-hover-lift group relative min-h-[380px] overflow-hidden rounded-[2rem] border border-white/70 bg-[var(--color-midnight)] p-4 shadow-[var(--shadow-soft)]">
+                  <div className="absolute inset-0 bg-cover bg-center transition duration-700 group-hover:scale-110" style={{ backgroundImage: `url("${tile.image}")` }} />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[rgba(7,26,34,0.96)] via-[rgba(7,26,34,0.45)] to-[rgba(7,26,34,0.1)]" />
+                  <div className={`absolute -right-10 -top-10 size-36 rounded-full bg-gradient-to-br ${tile.tone} opacity-80 blur-2xl`} />
+                  <div className="absolute inset-x-4 top-4 h-px bg-gradient-to-r from-transparent via-white/55 to-transparent" />
+                  <div className="relative flex h-full min-h-[348px] flex-col justify-between rounded-[1.55rem] border border-white/12 p-5 text-white">
+                    <div className="flex items-center justify-between">
+                      <span className="grid size-12 place-items-center rounded-2xl bg-white/90 text-[var(--color-midnight)] shadow-lg">
+                        <Icon size={23} />
+                      </span>
+                      <span className="rounded-full border border-white/16 bg-white/12 px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] backdrop-blur">
+                        Live vibe
+                      </span>
+                    </div>
+                    <div>
+                      <p className="journiq-live-dot mb-3 text-xs font-black uppercase tracking-[0.16em] text-emerald-100">{tile.place}</p>
+                      <h3 className="max-w-56 text-4xl font-black leading-none">{tile.label}</h3>
+                      <p className="mt-3 text-sm font-semibold leading-6 text-white/76">{tile.text}</p>
+                      <div className="mt-4 rounded-2xl border border-white/12 bg-white/12 p-3 backdrop-blur">
+                        <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--color-gold)]">Traveller feeling</p>
+                        <p className="mt-1 text-sm font-bold text-white/82">{tile.signal}</p>
+                      </div>
+                      <div className="mt-5 h-1.5 overflow-hidden rounded-full bg-white/16">
+                        <div className={`h-full w-2/3 rounded-full bg-gradient-to-r ${tile.tone}`} />
+                      </div>
+                    </div>
+                  </div>
+                </article>
+              </MotionReveal>
+            );
+          })}
+        </div>
+      </section>
+
       <LiveIslandBoard destinations={destinations} hotels={hotels} experiences={experiences} recommendations={recommendations} />
 
-      <section className="tourist-container mt-20">
+      <section className="tourist-container mt-24">
         <SectionHeader
-          eyebrow="Personal island routes"
-          title={user ? `${user.name?.split(" ")[0] || "Traveller"}, start with places that match your profile.` : "Start with places that change the pace."}
-          description="Admin-published destinations and travel stories surface beside preference-aware matches, so Sri Lanka discovery feels local instead of generic."
+          eyebrow="Island mood board"
+          title={user ? `${user.name?.split(" ")[0] || "Traveller"}, your Sri Lanka starts here.` : "Choose the places that match your travel mood."}
+          description="A richer destination layer for beaches, highlands, heritage towns, wildlife zones, and culture-first travel stories."
           action={{ label: "All destinations", href: "/destinations" }}
         />
         <div className="mt-9 grid gap-5 lg:grid-cols-[1.12fr_0.88fr]">
@@ -251,37 +416,49 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="mt-24 overflow-hidden bg-[var(--color-forest)] py-16 text-white">
-        <div className="tourist-container">
-          <div className="grid gap-8 lg:grid-cols-[0.78fr_1.22fr] lg:items-end">
-            <SectionHeader
-              inverted
-              eyebrow="Stay beautifully"
-              title="Live hotel inventory with room-ready booking flows."
-              description="Approved hotel-owner listings appear here with real images, room counts, descriptions, and request-booking actions."
-              action={{ label: "Browse hotels", href: "/hotels" }}
-            />
-            <div className="grid gap-3 sm:grid-cols-2">
-              {platformNotes.slice(0, 2).map((item) => {
+      <section className="relative mt-24 overflow-hidden py-24">
+        <div className="absolute inset-x-0 top-0 h-[68%] rounded-b-[3rem] bg-[var(--color-midnight)]" />
+        <div className="absolute inset-x-0 top-0 h-[68%] opacity-30 [background-image:radial-gradient(circle_at_18%_18%,#D9A441,transparent_24%),radial-gradient(circle_at_82%_22%,#0F766E,transparent_28%)]" />
+        <div className="tourist-container relative">
+          <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
+            <div>
+              <p className="inline-flex items-center gap-2 rounded-full border border-white/14 bg-white/10 px-4 py-2 text-xs font-black uppercase tracking-[0.2em] text-[var(--color-gold)] backdrop-blur">
+                <HotelIcon size={15} /> Stay beautifully
+              </p>
+              <h2 className="mt-5 max-w-3xl text-5xl leading-[0.92] text-white md:text-7xl">Sleep closer to the island feeling.</h2>
+              <p className="mt-5 max-w-2xl text-base leading-7 text-white/68">Approved hotels, villas, guest houses, and hill-country stays appear with real rooms, images, booking requests, and owner-managed details.</p>
+              <div className="mt-7 flex flex-wrap gap-3">
+                <ButtonLink href="/hotels" variant="coral">Browse stays <ArrowRight size={16} /></ButtonLink>
+                <ButtonLink href="/ai-trip-planner" variant="secondary" className="border-white/20 bg-white/10 text-white hover:bg-white/16">Match by AI</ButtonLink>
+              </div>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-3">
+              {[
+                { label: "Beach villas", icon: Waves },
+                { label: "Tea view stays", icon: Mountain },
+                { label: "City comfort", icon: Building2 },
+              ].map((item) => {
                 const Icon = item.icon;
                 return (
-                  <div key={item.label} className="rounded-[1.4rem] border border-white/12 bg-white/8 p-5 backdrop-blur">
+                  <div key={item.label} className="rounded-[1.5rem] border border-white/12 bg-white/10 p-5 text-white backdrop-blur">
                     <Icon className="text-[var(--color-gold)]" />
-                    <h3 className="mt-4 text-xl leading-tight">{item.label}</h3>
-                    <p className="mt-2 text-sm leading-6 text-white/68">{item.detail}</p>
+                    <p className="mt-5 font-black">{item.label}</p>
                   </div>
                 );
               })}
             </div>
           </div>
-          <div className="mt-9">
+
+          <div className="mt-10 rounded-[2.25rem] border border-white/70 bg-[var(--color-ivory)] p-4 shadow-[var(--shadow-lift)]">
             {loading && !liveHotels.length ? <LoadingSkeleton count={3} /> : null}
             {!loading && !featuredHotels.length ? (
               <EmptyState title="No approved hotels yet" description="Hotel owner listings will appear here after approval." />
             ) : (
-              <div className="grid gap-6 lg:grid-cols-3">
-                {featuredHotels.map((hotel) => (
-                  <HotelCard key={hotel.id || hotel.name} item={hotel} variant="featured" onBook={hotel.id ? onBookHotel : undefined} bookingLoading={bookingLoading} requiresLogin={user?.role !== "tourist"} />
+              <div className="grid gap-5 lg:grid-cols-[1.1fr_0.95fr_0.95fr]">
+                {featuredHotels.map((hotel, index) => (
+                  <div key={hotel.id || hotel.name} className={index === 0 ? "lg:[&>*]:h-full" : ""}>
+                    <HotelCard item={hotel} variant="featured" onBook={hotel.id ? onBookHotel : undefined} bookingLoading={bookingLoading} requiresLogin={user?.role !== "tourist"} />
+                  </div>
                 ))}
               </div>
             )}
@@ -293,8 +470,8 @@ export default function HomePage() {
         <div className="grid gap-8 lg:grid-cols-[0.78fr_1.22fr] lg:items-end">
           <SectionHeader
             eyebrow="Local pulse"
-            title="Experiences shaped around culture, activity, and people."
-            description="The experience layer stays more energetic than hotel browsing: categories, provider identity, capacity, duration, and booking requests stay visible."
+            title="Book the island, not just the itinerary."
+            description="Surf at sunrise, cook in a village kitchen, hike into mist, watch wildlife, and meet real local providers."
           />
           <div className="flex gap-3 overflow-x-auto pb-2">
             {categories.map((item) => (
@@ -317,6 +494,27 @@ export default function HomePage() {
       </section>
 
       <section className="tourist-container mt-24">
+        <div className="mb-10 grid gap-6 rounded-[2.25rem] bg-[var(--color-sand)] p-6 shadow-[var(--shadow-soft)] lg:grid-cols-[0.9fr_1.1fr] lg:p-8">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-[var(--color-coral)]">Designed for the tourist flow</p>
+            <h2 className="mt-3 text-4xl leading-none text-[var(--color-midnight)] md:text-6xl">From dream scroll to booked journey.</h2>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-3">
+            {[
+              { label: "Discover", icon: Plane },
+              { label: "Match", icon: Brain },
+              { label: "Book", icon: BadgeCheck },
+            ].map((item) => {
+              const Icon = item.icon;
+              return (
+                <div key={item.label} className="rounded-[1.5rem] bg-white/78 p-5">
+                  <Icon className="text-[var(--color-teal)]" />
+                  <p className="mt-4 font-black text-[var(--color-midnight)]">{item.label}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
         <div className="grid gap-6 lg:grid-cols-3">
           {steps.map((step, index) => {
             const Icon = step.icon;
@@ -340,12 +538,14 @@ export default function HomePage() {
         <div className="sticky top-24">
           <SectionHeader
             eyebrow="AI recommendation surface"
-            title="Matches that explain why they belong to this tourist."
-            description={aiRecommendations.length ? "These recommendations are coming from the live JourniQ recommendation endpoint." : "No recommendation cards are shown until the backend returns model results."}
+            title="Smart matches with reasons behind the vibe."
+            description={aiRecommendations.length ? "These recommendations are coming from the live JourniQ recommendation endpoint." : "Recommendations load after the main travel inventory so the page appears faster."}
           />
           <ButtonLink href="/recommendations" variant="secondary" className="mt-6">Open recommendations <ArrowRight size={16} /></ButtonLink>
         </div>
-        {visibleRecommendations.length ? (
+        {recommendationsLoading ? (
+          <LoadingSkeleton count={3} />
+        ) : visibleRecommendations.length ? (
           <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
             {visibleRecommendations.map((item) => (
               <RecommendationCard key={item.id || item.name} item={item} />
@@ -359,10 +559,10 @@ export default function HomePage() {
       <section className="tourist-container mt-24">
         <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
           <article className="rounded-[2rem] bg-[var(--color-sand)] p-8 shadow-[var(--shadow-soft)]">
-            <Map className="text-[var(--color-teal)]" />
-            <h3 className="mt-8 max-w-2xl text-4xl leading-none text-[var(--color-midnight)]">Seasonal inspiration, destination blogs, and preference matches in one tourist flow.</h3>
+            <Route className="text-[var(--color-teal)]" />
+            <h3 className="mt-8 max-w-2xl text-4xl leading-none text-[var(--color-midnight)]">Build a trip like a cinematic island route.</h3>
             <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-600">
-              The public screens now line up around the same journey: discover a place, understand why it fits, view real provider inventory, then book or ask the assistant.
+              Move from destination inspiration into hotels, experiences, AI recommendations, and booking requests without losing the Sri Lankan travel feeling.
             </p>
             <div className="mt-8 grid gap-3 sm:grid-cols-2">
               {platformNotes.slice(2).map((item) => {
@@ -400,7 +600,7 @@ export default function HomePage() {
       </section>
 
       <div className="tourist-container mt-24">
-        <CTASection title="Shape a Sri Lanka trip that feels made for you." description="Start with the AI planner, browse live hotel and experience inventory, then use the assistant when you need help deciding." buttonText="Open AI trip planner" />
+        <CTASection title="Ready for a Sri Lanka trip with better taste?" description="Start with the AI planner, browse live stays and experiences, then let JourniQ AI guide your next island decision." buttonText="Open AI trip planner" />
       </div>
     </main>
   );

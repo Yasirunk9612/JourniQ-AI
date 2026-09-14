@@ -49,6 +49,7 @@ export const adminApi = {
   updateExperienceStatus: (id: string, status: string) => unwrap<Record<string, unknown>>(axiosClient.patch(`/admin/experiences/${id}/status`, { status })),
 
   getDestinations: () => unwrap<{ destinations?: Destination[] }>(axiosClient.get("/admin/destinations")),
+  uploadDestinationImage: (formData: FormData) => unwrap<{ message: string; imageUrl: string }>(axiosClient.post("/admin/destinations/image", formData, { headers: { "Content-Type": "multipart/form-data" } })),
   createDestination: (payload: AdminDestinationInput) => unwrap<{ destination: Destination; message: string }>(axiosClient.post("/admin/destinations", payload)),
   updateDestination: (id: string, payload: AdminDestinationInput) => unwrap<{ destination: Destination; message: string }>(axiosClient.put(`/admin/destinations/${id}`, payload)),
   deleteDestination: (id: string) => unwrap<{ message: string }>(axiosClient.delete(`/admin/destinations/${id}`)),

@@ -22,6 +22,9 @@ interface RegisterInput {
   businessName?: string;
   businessRegistrationNumber?: string;
   district?: string;
+  address?: string;
+  latitude?: string;
+  longitude?: string;
   activityCategory?: string;
   touristPreferences?: {
     interests?: string[];

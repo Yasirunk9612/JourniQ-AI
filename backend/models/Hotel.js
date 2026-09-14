@@ -18,4 +18,8 @@ const hotelSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+hotelSchema.index({ verificationStatus: 1, updatedAt: -1 });
+hotelSchema.index({ verificationStatus: 1, district: 1 });
+hotelSchema.index({ verificationStatus: 1, category: 1 });
+
 module.exports = mongoose.model("Hotel", hotelSchema);

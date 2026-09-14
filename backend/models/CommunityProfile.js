@@ -9,6 +9,8 @@ const communityProfileSchema = new mongoose.Schema(
     district: { type: String, default: "", trim: true },
     contactNumber: { type: String, default: "", trim: true },
     address: { type: String, default: "", trim: true },
+    latitude: { type: Number, default: 0 },
+    longitude: { type: Number, default: 0 },
     languages: { type: [String], default: [] },
     verificationDocuments: { type: [String], default: [] },
     images: { type: [String], default: [] },

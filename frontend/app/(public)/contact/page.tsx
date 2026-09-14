@@ -19,7 +19,7 @@ export default function ContactPage() {
 
   return (
     <main>
-      <HeroSection compact title="Talk to JourniQ AI without losing the travel mood." subtitle="Support categories are ready in the interface. A real contact submission endpoint still needs to be added before messages can be sent." image="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1800&q=85" eyebrow="Contact">
+      <HeroSection compact title="Talk to JourniQ AI without losing the travel mood." subtitle="Support categories are ready in the interface. A real contact submission endpoint still needs to be added before messages can be sent." image="/images/Blue Beach Island.jpg" eyebrow="Contact">
         <div className="flex flex-wrap gap-3">
           <Link href="/help" className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[var(--color-coral)] px-5 py-2.5 text-sm font-extrabold text-white">Open help chat <MessageCircle size={16} /></Link>
           <Link href="/ai-assistant" className="inline-flex min-h-11 items-center gap-2 rounded-full bg-white/90 px-5 py-2.5 text-sm font-extrabold text-[var(--color-forest)]">Ask AI assistant <Sparkles size={16} /></Link>

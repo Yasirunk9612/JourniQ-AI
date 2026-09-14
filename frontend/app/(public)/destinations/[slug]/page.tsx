@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -14,6 +13,7 @@ export default function DestinationStoryPage() {
   const [destination, setDestination] = useState<Destination | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [imageFailed, setImageFailed] = useState(false);
 
   const load = useCallback(async () => {
     if (!params.slug) return;
@@ -22,6 +22,7 @@ export default function DestinationStoryPage() {
     try {
       const res = await publicApi.getDestination(params.slug);
       setDestination(res.destination);
+      setImageFailed(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not load this destination.");
     } finally {
@@ -69,8 +70,8 @@ export default function DestinationStoryPage() {
   return (
     <main className="bg-[var(--color-ivory)]">
       <section className="relative min-h-[76vh] overflow-hidden bg-[var(--color-midnight)] text-white">
-        {destination.image ? (
-          <Image src={destination.image} alt={`${destination.name} in ${destination.district}`} fill priority sizes="100vw" className="object-cover" />
+        {destination.image && !imageFailed ? (
+          <img src={destination.image} alt={`${destination.name} in ${destination.district}`} onError={() => setImageFailed(true)} className="absolute inset-0 h-full w-full object-cover" />
         ) : (
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(217,164,65,0.28),transparent_28%),radial-gradient(circle_at_82%_18%,rgba(15,118,110,0.34),transparent_30%),linear-gradient(135deg,#071A22,#0C3B35_56%,#071A22)]" />
         )}

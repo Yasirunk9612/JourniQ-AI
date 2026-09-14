@@ -14,6 +14,24 @@ const { bookingRequestTemplate, travelerBookingReceivedTemplate, formatDate } = 
 const { normalizeImageUrl, normalizeImageUrls } = require("../../utils/imageUrl");
 
 const nextId = (prefix) => `${prefix}-${Date.now().toString().slice(-8)}${Math.floor(Math.random() * 90 + 10)}`;
+const PUBLIC_CACHE_TTL_MS = Number(process.env.PUBLIC_CACHE_TTL_MS || 10000);
+const publicCache = new Map();
+
+const cacheKey = (req, name) => `${name}:${JSON.stringify(req.query || {})}`;
+
+const getCached = (key) => {
+  const item = publicCache.get(key);
+  if (!item || item.expiresAt < Date.now()) {
+    publicCache.delete(key);
+    return null;
+  }
+  return item.value;
+};
+
+const setCached = (key, value) => {
+  publicCache.set(key, { value, expiresAt: Date.now() + PUBLIC_CACHE_TTL_MS });
+  return value;
+};
 
 const emitBookingChat = async (req, conversation) => {
   const io = req.app.get("io");
@@ -76,6 +94,10 @@ const scoreDestinationForUser = (destination, user) => {
 };
 
 const getPublicDestinations = asyncHandler(async (req, res) => {
+  const key = cacheKey(req, "destinations");
+  const cached = getCached(key);
+  if (cached) return res.json(cached);
+
   const { category, region, search } = req.query;
   const query = { status: "published" };
   if (category && category !== "All") query.category = { $regex: String(category), $options: "i" };
@@ -90,7 +112,11 @@ const getPublicDestinations = asyncHandler(async (req, res) => {
     ];
   }
 
-  const rows = await Destination.find(query).sort({ createdAt: -1 });
+  const rows = await Destination.find(query)
+    .select("slug name district province category description image bestTime tags interests rating blogTitle blogExcerpt")
+    .sort({ createdAt: -1 })
+    .limit(24)
+    .lean();
   const destinations = rows
     .map((destination) => {
       const scored = scoreDestinationForUser(destination, req.user);
@@ -98,7 +124,7 @@ const getPublicDestinations = asyncHandler(async (req, res) => {
     })
     .sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0) || b.rating - a.rating);
 
-  res.json({ destinations, personalized: Boolean(req.user?.touristPreferences), count: destinations.length });
+  res.json(setCached(key, { destinations, personalized: Boolean(req.user?.touristPreferences), count: destinations.length }));
 });
 
 const getPublicDestinationBySlug = asyncHandler(async (req, res) => {
@@ -117,15 +143,26 @@ const getPublicDestinationBySlug = asyncHandler(async (req, res) => {
 });
 
 const getPublicHotels = asyncHandler(async (req, res) => {
+  const key = cacheKey(req, "hotels");
+  const cached = getCached(key);
+  if (cached) return res.json(cached);
+
   const { district, type } = req.query;
   const query = { verificationStatus: "approved" };
   if (district) query.district = { $regex: String(district), $options: "i" };
   if (type) query.category = { $regex: String(type), $options: "i" };
 
-  const hotels = await Hotel.find(query).populate("owner", "name").sort({ createdAt: -1 });
+  const hotels = await Hotel.find(query)
+    .select("owner hotelName description district category facilities images previewImage verificationStatus createdAt")
+    .populate("owner", "name")
+    .sort({ updatedAt: -1, createdAt: -1 })
+    .limit(48)
+    .lean();
+
+  const ownerIds = hotels.map((hotel) => hotel.owner?._id || hotel.owner).filter(Boolean);
 
   const roomAgg = await Room.aggregate([
-    { $match: { status: "active" } },
+    { $match: { status: "active", owner: { $in: ownerIds } } },
     {
       $group: {
         _id: "$owner",
@@ -156,7 +193,7 @@ const getPublicHotels = asyncHandler(async (req, res) => {
     };
   });
 
-  res.json({ hotels: rows });
+  res.json(setCached(key, { hotels: rows }));
 });
 
 const getPublicHotelById = asyncHandler(async (req, res) => {
@@ -200,13 +237,22 @@ const getPublicHotelById = asyncHandler(async (req, res) => {
 });
 
 const getPublicExperiences = asyncHandler(async (req, res) => {
+  const key = cacheKey(req, "experiences");
+  const cached = getCached(key);
+  if (cached) return res.json(cached);
+
   const { district, category } = req.query;
   const query = { status: { $in: ["approved", "active"] } };
   if (district) query.district = { $regex: String(district), $options: "i" };
   if (category) query.category = { $regex: String(category), $options: "i" };
 
-  const experiences = await Experience.find(query).populate("owner", "name").sort({ createdAt: -1 });
-  res.json({
+  const experiences = await Experience.find(query)
+    .select("owner title category district description previewImage images price duration maxGuests rating bookingsCount includedItems safetyNotes location status createdAt")
+    .populate("owner", "name")
+    .sort({ updatedAt: -1, createdAt: -1 })
+    .limit(48)
+    .lean();
+  res.json(setCached(key, {
     experiences: experiences.map((e) => ({
       id: String(e._id),
       ownerId: String(e.owner?._id || e.owner),
@@ -227,7 +273,7 @@ const getPublicExperiences = asyncHandler(async (req, res) => {
       safetyNotes: e.safetyNotes || "",
       location: e.location || "",
     })),
-  });
+  }));
 });
 
 const getPublicExperienceById = asyncHandler(async (req, res) => {

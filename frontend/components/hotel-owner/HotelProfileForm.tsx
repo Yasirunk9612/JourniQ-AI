@@ -31,6 +31,7 @@ import {
   X,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import MapPicker from "@/components/MapPicker";
 import { HotelProfile } from "@/types/hotelOwner";
 
 const HOTEL_FACILITY_GROUPS: Array<{
@@ -128,7 +129,7 @@ export default function HotelProfileForm({
   onUploadImages: (files: File[]) => Promise<void>;
   onDeleteImage: (imageUrl: string) => Promise<void>;
 }) {
-  const { register, handleSubmit, formState: { errors, isSubmitting }, reset, setValue } = useForm<FormValues>({
+  const { register, handleSubmit, formState: { errors, isSubmitting }, reset, setValue, watch } = useForm<FormValues>({
     resolver: zodResolver(schema) as Resolver<FormValues>,
     defaultValues: { category: "Hotel", facilities: "" },
   });
@@ -140,6 +141,8 @@ export default function HotelProfileForm({
   const [facilitySearch, setFacilitySearch] = useState("");
   const descriptionField = register("description");
   const hiddenFacilities = register("facilities");
+  const latitude = watch("latitude");
+  const longitude = watch("longitude");
 
   const uploadedCount = profile?.images?.length || 0;
   const remainingPhotos = Math.max(0, 15 - uploadedCount);
@@ -260,8 +263,19 @@ export default function HotelProfileForm({
                 </select>
               </Field>
               <Field label="Full address" error={errors.address?.message}><input {...register("address")} className={inputClass} placeholder="Street, town, district" /></Field>
-              <Field label="Latitude" error={errors.latitude?.message}><input {...register("latitude")} className={inputClass} placeholder="6.0329" /></Field>
-              <Field label="Longitude" error={errors.longitude?.message}><input {...register("longitude")} className={inputClass} placeholder="80.2168" /></Field>
+              <div className="md:col-span-2">
+                <Field label="Map pin" error={errors.latitude?.message || errors.longitude?.message}>
+                  <MapPicker
+                    title="Select hotel location"
+                    latitude={latitude || ""}
+                    longitude={longitude || ""}
+                    onChange={(coords) => {
+                      setValue("latitude", Number(coords.latitude), { shouldDirty: true, shouldValidate: true });
+                      setValue("longitude", Number(coords.longitude), { shouldDirty: true, shouldValidate: true });
+                    }}
+                  />
+                </Field>
+              </div>
             </div>
           </Section>
 
