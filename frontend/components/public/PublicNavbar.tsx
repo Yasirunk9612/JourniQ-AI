@@ -73,7 +73,7 @@ export default function PublicNavbar() {
         >
           <span className="absolute -right-0.5 -top-0.5 size-3 rounded-full border border-white bg-[var(--color-gold)] shadow-sm" aria-hidden="true" />
           <span className={`relative h-11 w-12 shrink-0 overflow-hidden rounded-[1.15rem] shadow-[0_12px_28px_rgba(7,26,34,0.2)] ring-1 transition duration-300 group-hover:scale-[1.03] max-sm:h-10 max-sm:w-11 ${
-            solid ? "bg-[var(--color-midnight)] ring-[rgba(12,59,53,0.12)]" : "bg-white/92 ring-white/60"
+            solid ? "bg-white ring-[rgba(12,59,53,0.12)]" : "bg-white/92 ring-white/60"
           }`}>
             <Image src="/LOGO2.png" alt="JourniQ AI logo" fill sizes="(max-width: 640px) 44px, 48px" className="object-contain p-1.5" priority />
           </span>

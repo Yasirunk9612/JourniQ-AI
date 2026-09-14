@@ -41,11 +41,11 @@ export default function BrandLogo({
     nav: "text-2xl",
     lg: "text-3xl",
   }[resolvedSize];
-  const imageFit = resolvedSize === "nav" || resolvedSize === "lg" ? "object-cover scale-[1.2]" : "object-cover scale-[1.12]";
+  const imageFit = "object-contain p-1";
 
   const content = (
     <>
-      <span className={`${logoSize} relative shrink-0 overflow-hidden bg-[var(--color-midnight)] shadow-[0_16px_40px_rgba(7,26,34,0.24)] ring-2 ${inverted ? "ring-white/25" : "ring-white"}`}>
+      <span className={`${logoSize} relative shrink-0 overflow-hidden bg-white shadow-[0_16px_40px_rgba(7,26,34,0.16)] ring-2 ${inverted ? "ring-white/25" : "ring-white"}`}>
         <Image src="/LOGO2.png" alt="JourniQ AI logo" fill sizes={imageSize} className={imageFit} priority={resolvedSize === "nav"} />
       </span>
       <span className="min-w-0">

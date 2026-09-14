@@ -79,7 +79,7 @@ export default function ExperiencesPage() {
 
   return (
     <main>
-      <HeroSection compact title="Book experiences with local pulse." subtitle="Culture, food, surf, hiking, safaris, wellness, and community-led activities from approved providers." image="/images/Pol Rotti & Coconut Sambol 🥥🍞.jpg" eyebrow="Community experiences">
+      <HeroSection compact title="Book experiences with local pulse." subtitle="Culture, food, surf, hiking, safaris, wellness, and community-led activities from approved providers." image="/images/pol-rotti-coconut-sambol.jpg" eyebrow="Community experiences">
         <div className="grid max-w-4xl gap-3 sm:grid-cols-4">
           {[
             { label: "Culture", icon: HeartHandshake },

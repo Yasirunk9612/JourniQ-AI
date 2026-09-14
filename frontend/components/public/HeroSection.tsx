@@ -2,9 +2,9 @@ import Image from "next/image";
 import MotionReveal from "./MotionReveal";
 
 const sriLankaFrames = [
-  "/images/Mirissa, Sri Lanka.jpg",
-  "/images/📍Sri Lanka.jpg",
-  "/images/Yapahuwa Rock Fortress Sri Lanka.jpg",
+  "/images/mirissa-sri-lanka.jpg",
+  "/images/sri-lanka-highlands.jpg",
+  "/images/yapahuwa-rock-fortress-sri-lanka.jpg",
 ];
 
 export default function HeroSection({

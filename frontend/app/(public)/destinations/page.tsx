@@ -52,7 +52,7 @@ export default function DestinationsPage() {
 
   return (
     <main>
-      <HeroSection compact title="Explore Sri Lanka by mood, region, and season." subtitle="A visual island guide for beaches, heritage, wildlife, mountains, village culture, and adventure, ranked with your tourist preferences when available." image="/images/Galle Fort Travel Guide, Sri Lanka.jpg" eyebrow="Destination discovery">
+      <HeroSection compact title="Explore Sri Lanka by mood, region, and season." subtitle="A visual island guide for beaches, heritage, wildlife, mountains, village culture, and adventure, ranked with your tourist preferences when available." image="/images/galle-fort-travel-guide-sri-lanka.jpg" eyebrow="Destination discovery">
         <div className="grid max-w-3xl gap-3 sm:grid-cols-3">
           {[
             { label: "Preference ranked", icon: Sparkles },

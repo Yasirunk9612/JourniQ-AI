@@ -75,7 +75,7 @@ export default function AITripPlannerPage() {
 
   return (
     <main>
-      <HeroSection compact title="Build the trip around how you actually travel." subtitle="A multi-step planning interface that captures real traveller signals for JourniQ recommendations and future AI itinerary generation." image="/images/📍Sri Lanka.jpg" eyebrow="Signature AI planner">
+      <HeroSection compact title="Build the trip around how you actually travel." subtitle="A multi-step planning interface that captures real traveller signals for JourniQ recommendations and future AI itinerary generation." image="/images/sri-lanka-highlands.jpg" eyebrow="Signature AI planner">
         <div className="grid max-w-4xl gap-3 sm:grid-cols-4">
           {[
             { label: "Dates", icon: CalendarDays },

@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:smoke": "node scripts/smoke-public-images.mjs",
+    "test:system": "node ../scripts/full-system-check.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

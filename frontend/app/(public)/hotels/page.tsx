@@ -98,7 +98,7 @@ export default function HotelsPage() {
 
   return (
     <main>
-      <HeroSection compact title="Find stays with island character." subtitle="Search approved hotels, resorts, villas, and guest houses from your live JourniQ backend with real booking request flows." image="/images/Best Relaxation.jpg" eyebrow="Hotel discovery">
+      <HeroSection compact title="Find stays with island character." subtitle="Search approved hotels, resorts, villas, and guest houses from your live JourniQ backend with real booking request flows." image="/images/best-relaxation.jpg" eyebrow="Hotel discovery">
         <div className="grid max-w-3xl gap-3 sm:grid-cols-3">
           {[
             { label: "Approved owners", icon: ShieldCheck },

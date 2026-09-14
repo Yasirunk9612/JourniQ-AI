@@ -64,6 +64,7 @@ export default function HomePage() {
   const [dataNotice, setDataNotice] = useState("");
   const [bookingLoading, setBookingLoading] = useState(false);
   const primaryBudget = user?.touristPreferences?.budgets?.[0] || "";
+  const userCountry = user?.country || "";
 
   const preferenceText = useMemo(() => {
     const preferences = user?.touristPreferences;
@@ -118,7 +119,7 @@ export default function HomePage() {
     try {
       const result = await publicApi.getPersonalizedRecommendations({
         preferences: preferenceText,
-        country: user?.country || "",
+        country: userCountry,
         budget: primaryBudget,
         type: "all",
         limit: 6,
@@ -129,7 +130,7 @@ export default function HomePage() {
     } finally {
       setRecommendationsLoading(false);
     }
-  }, [preferenceText, primaryBudget, user?.country]);
+  }, [preferenceText, primaryBudget, userCountry]);
 
   useEffect(() => {
     loadHomeData();
@@ -157,7 +158,7 @@ export default function HomePage() {
       text: "Bentota, Mirissa, Unawatuna",
       icon: Waves,
       tone: "from-[#f8c66a] to-[#ff6b4a]",
-      image: "/images/Mirissa, Sri Lanka.jpg",
+      image: "/images/mirissa-sri-lanka.jpg",
       place: "Mirissa coast",
       signal: "Sunset surf · Coconut Tree Hill",
     },
@@ -166,7 +167,7 @@ export default function HomePage() {
       text: "Ella, Nuwara Eliya, tea trails",
       icon: Mountain,
       tone: "from-[#0f766e] to-[#9fbf72]",
-      image: "/images/📍Sri Lanka.jpg",
+      image: "/images/sri-lanka-highlands.jpg",
       place: "Ella tea country",
       signal: "Tuk tuk rides · Morning mist",
     },
@@ -175,7 +176,7 @@ export default function HomePage() {
       text: "Hoppers, kottu, seafood nights",
       icon: Utensils,
       tone: "from-[#ff6b4a] to-[#d9a441]",
-      image: "/images/Pol Rotti & Coconut Sambol 🥥🍞.jpg",
+      image: "/images/pol-rotti-coconut-sambol.jpg",
       place: "Colombo food walk",
       signal: "Hoppers · Kottu · Crab curry",
     },
@@ -184,12 +185,11 @@ export default function HomePage() {
       text: "Temples, forts, village life",
       icon: Camera,
       tone: "from-[#071a22] to-[#0f766e]",
-      image: "/images/Yapahuwa Rock Fortress Sri Lanka.jpg",
+      image: "/images/yapahuwa-rock-fortress-sri-lanka.jpg",
       place: "Yapahuwa & Galle",
       signal: "Stone kingdoms · Fort sunsets",
     },
   ];
-  const vibeTags = ["Beaches", "Tea country", "Wildlife", "Surf", "Heritage", "Local food", "Wellness", "Adventure", "Village life"];
 
   const stats = [
     { label: "Destinations", value: liveDestinations.length },
@@ -237,7 +237,7 @@ export default function HomePage() {
   return (
     <main className="overflow-hidden">
       <section className="surface-noise relative min-h-[820px] overflow-hidden bg-[var(--color-midnight)] pt-36 text-white md:pt-40">
-        <div className="absolute inset-0 bg-cover bg-center opacity-70" style={{ backgroundImage: "url('/images/Blue Beach Island.jpg')" }} />
+        <div className="absolute inset-0 bg-cover bg-center opacity-70" style={{ backgroundImage: "url('/images/blue-beach-island.jpg')" }} />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_18%,rgba(217,164,65,0.34),transparent_24%),linear-gradient(105deg,rgba(7,26,34,0.96)_0%,rgba(7,26,34,0.82)_46%,rgba(7,26,34,0.35)_100%)]" />
         <div className="absolute inset-0 opacity-[0.13] journiq-map-grid" />
         <div className="absolute -right-20 top-20 hidden h-[640px] w-[640px] rounded-full border border-white/10 lg:block" />
@@ -280,7 +280,7 @@ export default function HomePage() {
               <div className="rounded-[2.4rem] border border-white/16 bg-white/10 p-3 shadow-[var(--shadow-lift)] backdrop-blur-2xl">
                 <div className="overflow-hidden rounded-[2rem] bg-[var(--color-ivory)] text-[var(--color-midnight)]">
                   <div className="grid gap-0 lg:grid-cols-[0.78fr_1.22fr]">
-                    <div className="relative min-h-[410px] bg-cover bg-center" style={{ backgroundImage: "url('/images/Galle Fort Travel Guide, Sri Lanka.jpg')" }}>
+                    <div className="relative min-h-[410px] bg-cover bg-center" style={{ backgroundImage: "url('/images/galle-fort-travel-guide-sri-lanka.jpg')" }}>
                       <div className="absolute inset-0 bg-gradient-to-t from-[rgba(7,26,34,0.62)] to-transparent" />
                       <div className="absolute bottom-4 left-4 right-4 rounded-[1.3rem] bg-white/90 p-4 backdrop-blur">
                         <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--color-teal)]">Sri Lanka route</p>
